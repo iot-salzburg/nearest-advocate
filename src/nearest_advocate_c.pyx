@@ -22,12 +22,11 @@ def nearest_advocate_single_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
     dist_padding (float): Distance assigned to non-overlapping (padding) events, should be 1/4 of the median gap of arr_ref. Only given if regulate_paddings is True
     '''
     # convert the event-based arrays to cython ndarrays
-    cdef np.ndarray[np.float32_t, ndim=1] arr_ref_c = arr_ref
-    cdef np.ndarray[np.float32_t, ndim=1] arr_sig_c = arr_sig
+    cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_ref_c = arr_ref
+    cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_sig_c = arr_sig
     
     # calculate and return the mean distance between both arrays
-    return _nearest_advocate_single_c(<np.ndarray[np.float32_t, ndim=1]>arr_ref_c, 
-                                      <np.ndarray[np.float32_t, ndim=1]>arr_sig_c, 
+    return _nearest_advocate_single_c(arr_ref_c, arr_sig_c, 
                                       dist_max=dist_max, regulate_paddings=regulate_paddings, 
                                       dist_padding=dist_padding)
 
@@ -115,8 +114,8 @@ def nearest_advocate_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
     dist_padding (float): Assumed distances of non-overlapping (padding) matches, default None: 1/4 of the median gap of arr_ref
     '''
     # convert the event-based arrays to cython ndarrays
-    cdef np.ndarray[np.float32_t, ndim=1] arr_ref_c = arr_ref
-    cdef np.ndarray[np.float32_t, ndim=1] arr_sig_c = arr_sig
+    cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_ref_c = arr_ref
+    cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_sig_c = arr_sig
     
     # create a kx2 array to store the time-shifts with their respective synchronicity
     cdef np.ndarray[np.float32_t, ndim=2] np_nearest_c = np.empty((int((td_max-td_min)*sps), 2), 
@@ -135,7 +134,7 @@ def nearest_advocate_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
                                dist_max=dist_max, regulate_paddings=regulate_paddings, 
                                dist_padding=dist_padding)
 
-cdef _nearest_advocate_c(
+cdef np.ndarray[np.float32_t, ndim=2] _nearest_advocate_c(
     np.ndarray[np.float32_t, ndim=1] arr_ref_c, np.ndarray[np.float32_t, ndim=1] arr_sig_c, 
     np.ndarray[np.float32_t, ndim=2] np_nearest_c, np.float32_t td_min, np.float32_t td_max, 
     np.float32_t sps=10.0, np.int32_t sparse_factor=1, 
