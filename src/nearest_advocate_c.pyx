@@ -195,7 +195,7 @@ def nearest_advocate_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
                                         dist_max=DEF_DIST, regulate_paddings=True,
                                         dist_padding=DEF_DIST)
     >>> time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
-    >>> time_shift, min_mean_dist
+    >>> print(time_shift, min_mean_dist)
     3.15, 0.07941238
     """
     # convert the event-based arrays to cython 1-D ndarray
