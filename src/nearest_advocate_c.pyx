@@ -1,27 +1,64 @@
-#!/usr/bin/env python
-"""Post-hoc synchronization method for event-based time-series, Cython implementation"""
-
-__author__ = "Christoph Schranz"
-__copyright__ = "Copyright 2022, Salzburg Research Forschungsg. mbH"
-__version__ = "1.0.0"
-__maintainer__ = "Christoph Schranz"
-__credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
-
-cimport cython
 import numpy as np
 cimport numpy as np
 
 
 def nearest_advocate_single_c(arr_ref: np.ndarray, arr_sig: np.ndarray, 
                               dist_max: float, regulate_paddings: bool, dist_padding: float):
-    '''Calculates the synchronicity of two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig and its nearest advocate in arr_ref.
-    arr_ref (np.ndarray): Reference array or timestamps assumed to be correct
-    arr_sig (np.ndarray): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
-    dist_max (float): Maximal accepted distances, should be 1/4 of the median gap of arr_ref
-    regulate_paddings (bool): Regulate non-overlapping events in arr_sig with a maximum distance of dist_padding, default True
-    dist_padding (float): Distance assigned to non-overlapping (padding) events, should be 1/4 of the median gap of arr_ref. Only given if regulate_paddings is True
-    '''
-    # convert the event-based arrays to cython ndarrays
+    """Post-hoc synchronization method for event-based time-series data.
+    
+    Calculates the synchronicity of two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig and its nearest advocate in arr_ref.
+
+    Parameters
+    ----------
+    arr_ref : 1-D ndarray
+        Reference array or timestamps assumed to be correct.
+    arr_sig : 1-D ndarray
+        Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta.
+    dist_max : float
+        Maximal accepted distances between two advocate events. It should be around 1/4 of the median gap of `arr_ref`.
+    regulate_paddings : bool
+        Regulate non-overlapping events in `arr_sig` with a maximum distance of dist_padding, default: True.
+    dist_padding : float
+        Distance assigned to non-overlapping (padding) events. It should be around 1/4 of the median gap of `arr_ref`. Obsolete if `regulate_paddings` is False
+
+    Returns
+    -------
+    mean_dist : float
+        Mean distance between all pairs of advocates, quantity of the synchronicity between the two arrays.
+
+    See Also
+    --------
+    nearest_advocate
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    References
+    ----------
+    C. Schranz, S. Mayr, "Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis- basierten Zeitreihendaten als Alternative zur Kreuzkorrelation", Spinfortec (Chemnitz 2022). :doi:`10.5281/zenodo.7370958`
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> np.random.seed(0)
+    >>> from scipy.signal import nearest_advocate_single_c
+    >>> N = 100_000 
+    >>> DEF_DIST = 0.25    
+    
+    Create a reference array whose events differences are sampled from a normal distribution. The signal array is the reference but shifted by `np.pi` and addional gaussian noise. The event-timestamps of both arrays must be sorted.
+    
+    >>> arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype(np.float32)
+    >>> arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
+
+    The function `nearest_advocate_single_c` returns a measure of the synchronicity between both array (lower is better). 
+
+    >>> nearest_advocate_single_c(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                  dist_max=DEF_DIST, regulate_paddings=True, 
+                                  dist_padding=DEF_DIST)
+    0.18436528742313385
+    """
+    # convert the event-based arrays to cython 1-D ndarray
     cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_ref_c = arr_ref
     cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_sig_c = arr_sig
     
@@ -34,13 +71,7 @@ cdef np.float32_t _nearest_advocate_single_c(np.ndarray[np.float32_t, ndim=1] ar
                                              np.ndarray[np.float32_t, ndim=1] arr_sig_c, 
                                              np.float32_t dist_max=0.0, bint regulate_paddings=True, 
                                              np.float32_t dist_padding=0.0):
-    '''Calculates the synchronicity of two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig_c and its nearest advocate in arr_ref_c.
-    arr_ref_c (np.array[np.float32_t, ndim=1]): Reference array or timestamps assumed to be correct
-    arr_sig_c (np.array[np.float32_t, ndim=1]): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
-    dist_max (np.float32_t): Maximal accepted distances, should be 1/4 of the median gap of arr_ref_c
-    regulate_paddings (bint): Regulate non-overlapping events in arr_sig_c with a maximum distance of dist_padding, default True (binary integer)
-    dist_padding (np.float32_t): Distance assigned to non-overlapping (padding) events, should be 1/4 of the median gap of arr_ref_c. Only given if regulate_paddings is True.
-    '''
+
     # store the lengths of the arrays
     cdef np.uint32_t l_arr_ref_c = arr_ref_c.shape[0]
     cdef np.uint32_t l_arr_sig_c = arr_sig_c.shape[0]
@@ -102,18 +133,72 @@ cdef np.float32_t _nearest_advocate_single_c(np.ndarray[np.float32_t, ndim=1] ar
 def nearest_advocate_c(arr_ref: np.ndarray, arr_sig: np.ndarray, 
                        td_min: float, td_max: float, sps: float=10, sparse_factor: int=1,
                        dist_max: float=0.0, regulate_paddings: bool=True, dist_padding: float=0.0):
-    '''Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max with a precision of 1/sps. The synchronicity is given by the mean of all minimal distances between each event in arr_sig and its nearest advocate in arr_ref.
-    arr_ref (np.array): Reference array or timestamps assumed to be correct
-    arr_sig (np.array): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
-    td_min (float): lower bound of the search space for the time-shift
-    td_max (float): upper bound of the search space for the time-shift
-    sps (int): number of investigated time-shifts per second, should be higher than 10 times the number of median gap of arr_ref (default 10).
-    sparse_factor (int): factor for the sparseness of arr_sig for the calculation, higher is faster but may be less accurate (default 1)
-    dist_max (float): Maximal accepted distances, default None: 1/4 of the median gap of arr_ref
-    regulate_paddings (bool): regulate non-overlapping events in arr_sig with a maximum distance of dist_padding
-    dist_padding (float): Assumed distances of non-overlapping (padding) matches, default None: 1/4 of the median gap of arr_ref
-    '''
-    # convert the event-based arrays to cython ndarrays
+    """Post-hoc synchronization method for event-based time-series data.
+    
+    Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max with a precision of 1/sps. The synchronicity is given by the mean of all minimal distances between each event in arr_sig and its nearest advocate in arr_ref.
+
+    Parameters
+    ----------
+    arr_ref : 1-D ndarray
+        Reference array or timestamps assumed to be correct.
+    arr_sig : 1-D ndarray
+        Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta.    
+    td_min : float
+        Lower bound of the search space for the time-shift.
+    td_max : float 
+        Upper bound of the search space for the time-shift.
+    sps : int
+        Number of investigated time-shifts per second, should be higher than 10 times the number of median gap of `arr_ref` (default 10).
+    sparse_factor : int
+        Factor for the sparseness of `arr_sig` for the calculation, higher is faster but may be less accurate (default 1).
+    dist_max : float
+        Maximal accepted distances between two advocate events. It should be around 1/4 of the median gap of `arr_ref`.
+    regulate_paddings : bool
+        Regulate non-overlapping events in `arr_sig` with a maximum distance of dist_padding, default: True.
+    dist_padding : float
+        Distance assigned to non-overlapping (padding) events. It should be around 1/4 of the median gap of `arr_ref`. Obsolete if `regulate_paddings` is False
+
+    Returns
+    -------
+    nearest_ts : 2-D ndarray
+        Two-columned array with evaluated time-shifts (between `td_min` and `td_max`) and the respective mean distances. The time-delta with the lowest mean distance is the estimation for the time-shift between the two arrays.
+
+    See Also
+    --------
+    nearest_advocate
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    References
+    ----------
+    C. Schranz, S. Mayr, "Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis- basierten Zeitreihendaten als Alternative zur Kreuzkorrelation", Spinfortec (Chemnitz 2022). :doi:`10.5281/zenodo.7370958`
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> np.random.seed(0)
+    >>> from scipy.signal import nearest_advocate_c
+    >>> N = 100_000 
+    >>> DEF_DIST = 0.25    
+    
+    Create a reference array whose events differences are sampled from a normal distribution. The signal array is the reference but shifted by `np.pi` and addional gaussian noise. The event-timestamps of both arrays must be sorted.
+    
+    >>> arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype(np.float32)
+    >>> arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
+
+    The function `nearest_advocate_c` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both array (lower is better). 
+    
+    >>> np_nearest = nearest_advocate_c(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                        td_min=-60, td_max=60, sps=20, sparse_factor=1, 
+                                        dist_max=DEF_DIST, regulate_paddings=True,
+                                        dist_padding=DEF_DIST)
+    >>> time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
+    >>> time_shift, min_mean_dist
+    3.15, 0.07941238
+    """
+    # convert the event-based arrays to cython 1-D ndarray
     cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_ref_c = arr_ref
     cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_sig_c = arr_sig
     
@@ -139,18 +224,6 @@ cdef np.ndarray[np.float32_t, ndim=2] _nearest_advocate_c(
     np.ndarray[np.float32_t, ndim=2] np_nearest_c, np.float32_t td_min, np.float32_t td_max, 
     np.float32_t sps=10.0, np.int32_t sparse_factor=1, 
     np.float32_t dist_max=0.0, bint regulate_paddings=1, np.float32_t dist_padding=0.0):
-    '''Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max with a precision of 1/sps. The synchronicity is given by the mean of all minimal distances between each event in arr_sig_c and its nearest advocate in arr_ref_c.
-    arr_ref_c (np.ndarray[np.float32_t, ndim=1]): Reference array or timestamps assumed to be correct
-    arr_sig_c (np.ndarray[np.float32_t, ndim=1]): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
-    np_nearest_c (np.ndarray[np.float32_t, ndim=2]): Array to story all time-shits and their respective synchronicity
-    td_min (np.float32_t): lower bound of the search space for the time-shift
-    td_max (np.float32_t): upper bound of the search space for the time-shift
-    sps (np.int32_t): number of investigated time-shifts per second, should be higher than 10 times the number of median gap of arr_ref_c (default 10).
-    sparse_factor (int): factor for the sparseness of arr_sig_c for the calculation, higher is faster but may be less accurate (default 1)
-    dist_max (np.float32_t): Maximal accepted distances, default None: 1/4 of the median gap of arr_ref_c
-    regulate_paddings (bint): regulate non-overlapping events in arr_sig_c with a maximum distance of dist_padding (binary integer)
-    dist_padding (np.float32_t): Assumed distances of non-overlapping (padding) matches, default None: 1/4 of the median gap of arr_ref_c
-    '''
     # set the default values for dist_max, dist_padding relative if not set
     # TODO improve default value: min(np.median(np.diff(arr_sig_c)), np.median(np.diff(arr_ref_c))) / 4
     if dist_max == 0.0:
