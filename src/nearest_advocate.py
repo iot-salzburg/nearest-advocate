@@ -13,7 +13,8 @@ from numba import njit
 
 
 @njit(parallel=False)
-def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, dist_max: float, dist_padding: float, regulate_paddings: bool=True):
+def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray, 
+                            dist_max: float, dist_padding: float, regulate_paddings: bool=True):
     '''Calculates the synchronicity of two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
     arr_ref (np.array): Reference array or timestamps assumed to be correct
     arr_sig (np.array): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
@@ -88,9 +89,9 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, dist_max: float, 
 
 
 @njit(parallel=False)
-def sparse_search_time_delta(arr_ref: np.ndarray, arr_sig: np.ndarray, 
-                             td_min: float, td_max: float, sps: float=10, sparse_factor: int=1, 
-                             dist_max: float=0.0, regulate_paddings: bool=True, dist_padding: float=0.0):
+def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, 
+                     td_min: float, td_max: float, sps: float=10, sparse_factor: int=1, 
+                     dist_max: float=0.0, regulate_paddings: bool=True, dist_padding: float=0.0):
     '''Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max with a precision of 1/sps. The synchronicity is given by the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
     arr_ref (np.array): Reference array or timestamps assumed to be correct
     arr_sig (np.array): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
@@ -124,11 +125,10 @@ def sparse_search_time_delta(arr_ref: np.ndarray, arr_sig: np.ndarray,
     idx = 0
     while idx < np_nearest.shape[0]:
         # calculate the nearest advocate criteria
-        np_nearest[idx,1] = nearest_advocate(
+        np_nearest[idx,1] = nearest_advocate_single(
              arr_ref, 
              probe-np_nearest[idx,0],  # the signal array is shifted by a time-delta
-             dist_max=dist_max, regulate_paddings=regulate_paddings, 
-             dist_padding=dist_padding)
+             dist_max=dist_max, regulate_paddings=regulate_paddings, dist_padding=dist_padding)
         idx += 1
     return np_nearest
 
@@ -139,10 +139,10 @@ if __name__ == "__main__":
     np.random.seed(0)
     arr_ref = np.cumsum(np.random.random(size=size) + 0.5)
     arr_sig = arr_ref + np.random.normal(loc=0, scale=0.1, size=size) + np.pi 
-    print(nearest_advocate(arr_ref, arr_sig, dist_max=0.25, dist_padding=0.25))
+    print(nearest_advocate_single(arr_ref, arr_sig, dist_max=0.25, dist_padding=0.25))
     
     print(f"\nTesting sparse_search_time_delta:")
-    print(sparse_search_time_delta(arr_ref, arr_sig, td_min=-10, td_max=10, 
-                                   sparse_factor=1, sps=10,
-                                   dist_max=0.0, regulate_paddings=True, dist_padding=0.0)[:5])
+    print(nearest_advocate(arr_ref, arr_sig, td_min=-10, td_max=10, 
+                           sparse_factor=1, sps=10,
+                           dist_max=0.0, regulate_paddings=True, dist_padding=0.0)[:5])
     

@@ -6,8 +6,8 @@ import numpy as np
 np.random.seed(0)
 
 from numba import njit
-from nearest_advocate import nearest_advocate
-from nearest_advocate_c import nearest_advocate_wrapper
+from nearest_advocate import nearest_advocate_single
+from nearest_advocate_c import nearest_advocate_single_c
 
 
 N = 100_000               # number of events in the random arrays
@@ -21,20 +21,20 @@ arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype
 arr_sig = np.sort(arr_ref + TIME_SHIFT + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
 
 # Time the numba-solution
-mean_dist = nearest_advocate(arr_ref, arr_sig, 
-                             dist_max=DEF_DIST, dist_padding=DEF_DIST, 
-                                regulate_paddings=REGULATE_PADDINGS)
+mean_dist = nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                    dist_max=DEF_DIST, dist_padding=DEF_DIST,
+                                    regulate_paddings=REGULATE_PADDINGS)
 start_time = time.time()
-mean_dist = nearest_advocate(arr_ref, arr_sig, 
-                             dist_max=DEF_DIST, dist_padding=DEF_DIST, 
-                             regulate_paddings=REGULATE_PADDINGS)
+mean_dist = nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                    dist_max=DEF_DIST, dist_padding=DEF_DIST, 
+                                    regulate_paddings=REGULATE_PADDINGS)
 pytime = time.time() - start_time
 print(f"Numba:   \t{pytime:.8f} s, \tmean distance: {mean_dist:.6f} s")
 
 # Time the Cython-solution
 start_time = time.time()
-mean_dist = nearest_advocate_wrapper(arr_ref, arr_sig, 
-                             dist_max=DEF_DIST, dist_padding=DEF_DIST, 
-                                     regulate_paddings=REGULATE_PADDINGS)
+mean_dist = nearest_advocate_single_c(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                      dist_max=DEF_DIST, dist_padding=DEF_DIST, 
+                                      regulate_paddings=REGULATE_PADDINGS)
 pytime = time.time() - start_time
 print(f"Cython: \t{pytime:.8f} s, \tmean distance: {mean_dist:.6f} s")
