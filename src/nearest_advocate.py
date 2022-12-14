@@ -80,8 +80,15 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
         # Step 4: match trailing reference timestamps with last signal timestamp
         elif regulate_paddings:  
             # Invariant: arr_ref[ref_idx+1] <= arr_sig[sig_idx], given by the else case
-            cum_distance += min(arr_sig[sig_idx]-arr_ref[ref_idx+1], dist_padding) 
-            counter += 1
+            if arr_sig[sig_idx]-arr_ref[ref_idx+1] < dist_padding:
+                cum_distance += arr_sig[sig_idx]-arr_ref[ref_idx+1]
+                counter += 1
+            else: 
+                # case with only dist_padding increments from now on
+                cum_distance += (l_arr_sig - sig_idx) * dist_padding
+                counter += (l_arr_sig - sig_idx)
+                break # stop, because the last values can be aggregated
+                
         sig_idx += 1
     
     # return mean cumulative distance between found advocate events

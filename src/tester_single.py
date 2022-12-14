@@ -7,7 +7,6 @@ np.random.seed(0)
 
 from numba import njit
 from nearest_advocate import nearest_advocate_single
-from nearest_advocate_c import nearest_advocate_single_c
 
 
 N = 100_000               # number of events in the random arrays
@@ -31,9 +30,11 @@ mean_dist = nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig,
 pytime = time.time() - start_time
 print(f"Numba:   \t{pytime:.8f} s, \tmean distance: {mean_dist:.6f} s")
 
+
 # Time the Cython-solution
+from nearest_advocate_c import nearest_advocate_single
 start_time = time.time()
-mean_dist = nearest_advocate_single_c(arr_ref=arr_ref, arr_sig=arr_sig, 
+mean_dist = nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig, 
                                       dist_max=DEF_DIST, dist_padding=DEF_DIST, 
                                       regulate_paddings=REGULATE_PADDINGS)
 pytime = time.time() - start_time

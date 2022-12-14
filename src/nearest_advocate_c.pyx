@@ -2,7 +2,7 @@ import numpy as np
 cimport numpy as np
 
 
-def nearest_advocate_single_c(arr_ref: np.ndarray, arr_sig: np.ndarray, 
+def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray, 
                               dist_max: float, regulate_paddings: bool, dist_padding: float):
     """Post-hoc synchronization method for event-based time-series data.
     
@@ -32,7 +32,7 @@ def nearest_advocate_single_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Notes
     -----
-    .. versionadded:: 0.1.0
+    .. versionadded:: 1.11.0
 
     References
     ----------
@@ -61,6 +61,10 @@ def nearest_advocate_single_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
     # convert the event-based arrays to cython 1-D ndarray
     cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_ref_c = arr_ref
     cdef np.ndarray[np.float32_t, ndim=1, cast=True] arr_sig_c = arr_sig
+    
+    assert dist_max > 0.0  # Maximal accepted distances between two advocate events. (see docs)
+    if regulate_paddings:
+        assert dist_padding > 0.0  # Distance assigned to non-overlapping events. (see docs)
     
     # calculate and return the mean distance between both arrays
     return _nearest_advocate_single_c(arr_ref_c, arr_sig_c, 
@@ -99,7 +103,7 @@ cdef np.float32_t _nearest_advocate_single_c(np.ndarray[np.float32_t, ndim=1] ar
             cum_distance += min(arr_ref_c[ref_idx]-arr_sig_c[sig_idx], dist_padding)
             counter += 1
         sig_idx += 1
-        
+    
     # return dist_max, if arr_sig_c ends before arr_ref_c starts
     if sig_idx == l_arr_sig_c:
         return dist_max        
@@ -123,14 +127,21 @@ cdef np.float32_t _nearest_advocate_single_c(np.ndarray[np.float32_t, ndim=1] ar
         # Step 4: match trailing reference timestamps with last signal timestamp
         elif regulate_paddings:  
             # Invariant: arr_ref_c[ref_idx+1] <= arr_sig_c[sig_idx], given by the else case
-            cum_distance += min(arr_sig_c[sig_idx]-arr_ref_c[ref_idx+1], dist_padding) 
-            counter += 1
+            if arr_sig_c[sig_idx]-arr_ref_c[ref_idx+1] < dist_padding:
+                cum_distance += arr_sig_c[sig_idx]-arr_ref_c[ref_idx+1]
+                counter += 1
+            else: 
+                # case with only dist_padding increments from now on
+                cum_distance += (l_arr_sig_c - sig_idx) * dist_padding
+                counter += (l_arr_sig_c - sig_idx)
+                break # stop, because the last values can be aggregated
+                
         sig_idx += 1
-    
+
     # return mean cumulative distance between found advocate events
     return cum_distance / counter
 
-def nearest_advocate_c(arr_ref: np.ndarray, arr_sig: np.ndarray, 
+def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, 
                        td_min: float, td_max: float, sps: float=10, sparse_factor: int=1,
                        dist_max: float=0.0, regulate_paddings: bool=True, dist_padding: float=0.0):
     """Post-hoc synchronization method for event-based time-series data.
@@ -169,7 +180,7 @@ def nearest_advocate_c(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Notes
     -----
-    .. versionadded:: 0.1.0
+    .. versionadded:: 1.11.0
 
     References
     ----------

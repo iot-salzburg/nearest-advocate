@@ -6,7 +6,7 @@ A post-hoc time synchronization algorithm for event-based time-series data
 
 Within the GPU-Juypter-service mdilab-gupyter available on [dsws:22201](http://dsws:22201/) we follow the guides:
 
-1. https://www.youtube.com/watch?v=K9bF7cjUJ7c
+1. https://www.youtube.com/watch?v=K9bF7cjUJ7c and other of his videos
 2. https://docs.scipy.org/doc/scipy/dev/contributor/cython.html#adding-cython
 
 
@@ -15,10 +15,12 @@ cd /home/jovyan/work/Synchronization/
 git clone https://github.com/iot-salzburg/nearest-advocate
 git clone https://github.com/scipy/scipy
 
+sudo apt-get install gfortran
 sudo python3 -m pip install -U pip
 pip install pybind11
 pip install --upgrade cython  # the latest version is required
 pip install pythran
+pip install pooch
 
 cd scipy
 python setup.py build_ext --inplace
@@ -127,4 +129,30 @@ python tester_search.py
 #> Cython:         1.06847000 s,   mean_dist: [3.15       0.07923757] s
 ```
 
-Therefore, t
+Therefore, the Cython-version is a little bit faster than numba.
+
+
+## Add nearest_advocate to scipy
+
+Steps to add nearest_advocate to scipy:
+
+2. nearest_advocate
+
+```bash
+cd /home/jovyan/work/Synchronization/scipy
+git checkout -b nearest_advocate
+
+cp /path/to/nearest_advocate.pyx scipy/signal/nearest_advocate.pyx
+```
+Then change the files `setup.py`, `__init__.py` etc.
+
+2. Build the documentation
+```bash
+conda install sphinx pydata-sphinx-theme sphinx-design matplotlib --channel conda-forge
+pip install -r doc_requirements.txt 
+pip install pooch
+
+cd doc
+make html
+```
+
