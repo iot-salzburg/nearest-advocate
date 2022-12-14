@@ -32,7 +32,7 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Notes
     -----
-    .. versionadded:: 1.11.0
+    .. versionadded:: 1.9.4
 
     References
     ----------
@@ -42,7 +42,7 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
     --------
     >>> import numpy as np
     >>> np.random.seed(0)
-    >>> from scipy.signal import nearest_advocate_single_c
+    >>> from scipy.signal import nearest_advocate_single
     >>> N = 100_000 
     >>> DEF_DIST = 0.25    
     
@@ -51,9 +51,9 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
     >>> arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype(np.float32)
     >>> arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
 
-    The function `nearest_advocate_single_c` returns a measure of the synchronicity between both array (lower is better). 
+    The function `nearest_advocate_single` returns a measure of the synchronicity between both array (lower is better). 
 
-    >>> nearest_advocate_single_c(arr_ref=arr_ref, arr_sig=arr_sig, 
+    >>> nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig, 
                                   dist_max=DEF_DIST, regulate_paddings=True, 
                                   dist_padding=DEF_DIST)
     0.18436528742313385
@@ -180,7 +180,7 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Notes
     -----
-    .. versionadded:: 1.11.0
+    .. versionadded:: 1.9.4
 
     References
     ----------
@@ -190,7 +190,7 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
     --------
     >>> import numpy as np
     >>> np.random.seed(0)
-    >>> from scipy.signal import nearest_advocate_c
+    >>> from scipy.signal import nearest_advocate
     >>> N = 100_000 
     >>> DEF_DIST = 0.25    
     
@@ -199,9 +199,9 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
     >>> arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype(np.float32)
     >>> arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
 
-    The function `nearest_advocate_c` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both array (lower is better). 
+    The function `nearest_advocate` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both array (lower is better). 
     
-    >>> np_nearest = nearest_advocate_c(arr_ref=arr_ref, arr_sig=arr_sig, 
+    >>> np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
                                         td_min=-60, td_max=60, sps=20, sparse_factor=1, 
                                         dist_max=DEF_DIST, regulate_paddings=True,
                                         dist_padding=DEF_DIST)
