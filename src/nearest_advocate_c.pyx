@@ -158,16 +158,16 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
         Lower bound of the search space for the time-shift.
     td_max : float 
         Upper bound of the search space for the time-shift.
-    sps : int
+    sps : int, optional
         Number of investigated time-shifts per second, should be higher than 10 times the number of median gap of `arr_ref` (default 10).
-    sparse_factor : int
+    sparse_factor : int, optional
         Factor for the sparseness of `arr_sig` for the calculation, higher is faster but may be less accurate (default 1).
-    dist_max : float
-        Maximal accepted distances between two advocate events. It should be around 1/4 of the median gap of `arr_ref`.
-    regulate_paddings : bool
-        Regulate non-overlapping events in `arr_sig` with a maximum distance of dist_padding, default: True.
-    dist_padding : float
-        Distance assigned to non-overlapping (padding) events. It should be around 1/4 of the median gap of `arr_ref`. Obsolete if `regulate_paddings` is False
+    dist_max : float, optional
+        Maximal accepted distances between two advocate events. It should be around 1/4 of the median gap of `arr_ref` (default).
+    regulate_paddings : bool, optional
+        Regulate non-overlapping events in `arr_sig` with a maximum distance of dist_padding (default True).
+    dist_padding : float, optional
+        Distance assigned to non-overlapping (padding) events. It should be around 1/4 of the median gap of `arr_ref` (default). Obsolete if `regulate_paddings` is False
 
     Returns
     -------
@@ -236,11 +236,10 @@ cdef np.ndarray[np.float32_t, ndim=2] _nearest_advocate_c(
     np.float32_t sps=10.0, np.int32_t sparse_factor=1, 
     np.float32_t dist_max=0.0, bint regulate_paddings=1, np.float32_t dist_padding=0.0):
     # set the default values for dist_max, dist_padding relative if not set
-    # TODO improve default value: min(np.median(np.diff(arr_sig_c)), np.median(np.diff(arr_ref_c))) / 4
     if dist_max == 0.0:
-        dist_max = min(np.median(np.diff(arr_ref_c))/4, np.median(np.diff(arr_sig_c))/4)
+        dist_max = np.median(np.diff(arr_ref_c))/4
     if dist_padding == 0.0:
-        dist_padding = min(np.median(np.diff(arr_ref_c))/4, np.median(np.diff(arr_sig_c))/4)
+        dist_padding = np.median(np.diff(arr_ref_c))/4
         
     # Random subsample
     if sparse_factor > 1:
