@@ -43,5 +43,5 @@ Therefore, the Cython-version is a little bit faster than numba.
 
 ## Development of Scipy
 
-Read the the [build-README.md](scipydev/REAMDE.md)
+Read the the [build-README.md](#scipydev/REAMDE.md)
 
