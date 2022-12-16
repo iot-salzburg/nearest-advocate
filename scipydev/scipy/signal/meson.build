@@ -77,7 +77,7 @@ else
 endif
 
 pyx_files = [
-  ['_nearest_advocate', '_nearest_advocate.pyx'],
+  ['_nearest_advocate_util', '_nearest_advocate_util.pyx'],
   ['_peak_finding_utils', '_peak_finding_utils.pyx'],
   ['_sosfilt', '_sosfilt.pyx'],
   ['_upfirdn_apply', '_upfirdn_apply.pyx']

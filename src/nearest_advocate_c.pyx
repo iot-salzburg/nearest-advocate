@@ -2,7 +2,7 @@ import numpy as np
 cimport numpy as np
 
 
-def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray, 
+def _nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray, 
                               dist_max: float, regulate_paddings: bool, dist_padding: float):
     """Post-hoc synchronization method for event-based time-series data.
     
@@ -10,10 +10,10 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Parameters
     ----------
-    arr_ref : 1-D ndarray
-        Reference array or timestamps assumed to be correct.
-    arr_sig : 1-D ndarray
-        Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta.
+    arr_ref : array_like
+        Reference array (1-D) or timestamps assumed to be correct.
+    arr_sig : array_like
+        Signal array (1-D) of timestamps, assumed to be shifted by an unknown constant time-delta.
     dist_max : float
         Maximal accepted distances between two advocate events. It should be around 1/4 of the median gap of `arr_ref`.
     regulate_paddings : bool
@@ -36,13 +36,13 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     References
     ----------
-    C. Schranz, S. Mayr, "Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis- basierten Zeitreihendaten als Alternative zur Kreuzkorrelation", Spinfortec (Chemnitz 2022). :doi:`10.5281/zenodo.7370958`
+    C. Schranz, S. Mayr, "Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis-basierten Zeitreihendaten als Alternative zur Kreuzkorrelation", Spinfortec (Chemnitz 2022). :doi:`10.5281/zenodo.7370958`
 
     Examples
     --------
     >>> import numpy as np
     >>> np.random.seed(0)
-    >>> from scipy.signal import nearest_advocate_single
+    >>> from scipy.signal import _nearest_advocate_single
     >>> N = 100_000 
     >>> DEF_DIST = 0.25    
     
@@ -51,9 +51,9 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
     >>> arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype(np.float32)
     >>> arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
 
-    The function `nearest_advocate_single` returns a measure of the synchronicity between both array (lower is better). 
+    The function `_nearest_advocate_single` returns a measure of the synchronicity between both array (lower is better). 
 
-    >>> nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig, 
+    >>> _nearest_advocate_single(arr_ref=arr_ref, arr_sig=arr_sig, 
                                   dist_max=DEF_DIST, regulate_paddings=True, 
                                   dist_padding=DEF_DIST)
     0.18436528742313385
@@ -150,10 +150,10 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Parameters
     ----------
-    arr_ref : 1-D ndarray
-        Reference array or timestamps assumed to be correct.
-    arr_sig : 1-D ndarray
-        Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta.    
+    arr_ref : array_like
+        Reference array (1-D) or timestamps assumed to be correct.
+    arr_sig : array_like
+        Signal array (1-D) of timestamps, assumed to be shifted by an unknown constant time-delta.    
     td_min : float
         Lower bound of the search space for the time-shift.
     td_max : float 
@@ -171,12 +171,8 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     Returns
     -------
-    nearest_ts : 2-D ndarray
-        Two-columned array with evaluated time-shifts (between `td_min` and `td_max`) and the respective mean distances. The time-delta with the lowest mean distance is the estimation for the time-shift between the two arrays.
-
-    See Also
-    --------
-    nearest_advocate
+    time_shifts : array_like
+        Two-columned 2-D array with evaluated time-shifts (between `td_min` and `td_max`) and the respective mean distances. The time-delta with the lowest mean distance is the estimation for the time-shift between the two arrays.
 
     Notes
     -----
@@ -184,11 +180,11 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     References
     ----------
-    C. Schranz, S. Mayr, "Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis- basierten Zeitreihendaten als Alternative zur Kreuzkorrelation", Spinfortec (Chemnitz 2022). :doi:`10.5281/zenodo.7370958`
+    C. Schranz, S. Mayr, "Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis-basierten Zeitreihendaten als Alternative zur Kreuzkorrelation", Spinfortec (Chemnitz 2022). :doi:`10.5281/zenodo.7370958`
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np 
     >>> np.random.seed(0)
     >>> from scipy.signal import nearest_advocate
     >>> N = 100_000 
@@ -201,11 +197,11 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     The function `nearest_advocate` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both array (lower is better). 
     
-    >>> np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
-                                        td_min=-60, td_max=60, sps=20, sparse_factor=1, 
-                                        dist_max=DEF_DIST, regulate_paddings=True,
-                                        dist_padding=DEF_DIST)
-    >>> time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
+    >>> time_shifts = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                       td_min=-60, td_max=60, sps=20, sparse_factor=1, 
+                                       dist_max=DEF_DIST, regulate_paddings=True,
+                                       dist_padding=DEF_DIST)
+    >>> time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
     >>> print(time_shift, min_mean_dist)
     3.15, 0.07941238
     """

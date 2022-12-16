@@ -2,37 +2,10 @@ import pytest
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
-from scipy.signal import nearest_advocate_single, nearest_advocate
+from scipy.signal import nearest_advocate
 
 SEED = 0
 
-def test_single_base():
-    N = 1_000 
-    DEF_DIST = 0.25    
-    
-    np.random.seed(SEED)
-    arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N))).astype(np.float32)
-    arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=N)).astype(np.float32)
-
-    mean_dist = nearest_advocate_single(
-        arr_ref=arr_ref, arr_sig=arr_sig,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
-    
-    assert_almost_equal(mean_dist, 0.18534180521965027, decimal=2)
-    
-def test_single_edge():
-    N = 1_000 
-    DEF_DIST = 0.25    
-    
-    np.random.seed(SEED)
-    arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.5, size=N))).astype(np.float32)
-    arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.4, size=N)).astype(np.float32)
-
-    mean_dist = nearest_advocate_single(
-        arr_ref=arr_ref, arr_sig=arr_sig,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
-    
-    assert_almost_equal(mean_dist, 0.18853682279586792, decimal=2)
         
 def test_nearest_advocate_base():
     N = 1_000 
@@ -136,6 +109,6 @@ def test_nearest_advocate_base_noverlap():
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
     
     # assert_almost_equal(time_shift, -60, decimal=1)  # each value is the same
-    assert_almost_equal(min_mean_dist, DEF_DIST, decimal=2)
+    assert_equal(min_mean_dist, DEF_DIST)
         
     

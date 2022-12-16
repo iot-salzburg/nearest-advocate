@@ -195,8 +195,7 @@ Discrete-time linear systems
    dstep            -- Step response of a discrete-time LTI system.
    dfreqresp        -- Frequency response of a discrete-time LTI system.
    dbode            -- Bode magnitude and phase data (discrete-time LTI).
-   nearest_advocate_single -- Post-hoc synchronization of event-based time series data.
-   nearest_advocate -- Post-hoc synchronization of event-based time series data for a search space.
+   nearest_advocate -- Post-hoc synchronization of event-based time-series data.
 
 LTI representations
 ===================
@@ -330,8 +329,8 @@ from ._signaltools import *
 from ._savitzky_golay import savgol_coeffs, savgol_filter
 from ._spectral_py import *
 from ._wavelets import *
-from ._nearest_advocate import *
 from ._peak_finding import *
+from ._nearest_advocate import nearest_advocate
 from ._czt import *
 from .windows import get_window  # keep this one in signal namespace
 

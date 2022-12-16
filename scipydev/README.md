@@ -13,14 +13,17 @@ Within the GPU-Juypter-service mdilab-gupyter available on [dsws:22201](http://d
 
 ```bash
 cd /home/jovyan/work/Synchronization/
-git clone https://github.com/scipy/scipy
+git clone https://github.com/iot-salzburg/scipy.git
 
-conda create --no-default-packages --name scipydev
-conda activate scipydev
+conda env create -f environment.yml
+conda activate scipy-dev
 
-sudo apt-get install gfortran
-sudo python3 -m pip install -U pip
-pip install --upgrade cython pythran pybind11 pooch
+git submodule update --init.
+python dev.py build
+
+# sudo apt-get install gfortran
+# sudo python3 -m pip install -U pip
+# conda install cython pythran pybind11 pooch numpy mkl=2019.* blas=*=*mkl
 
 cd scipy
 python setup.py build_ext --inplace
@@ -141,4 +144,5 @@ git submodule init
 git submodule update
 
 make html
+# In case this doesn't work, run: make dist
 ```
