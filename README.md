@@ -15,30 +15,35 @@ pip install numpy
 ```
 
 
-## Build and test nearest_advocate
+## Build and benchmark nearest_advocate
 
 Build the algorith in `nearest_advocate` with:
 ```bash
+cd nearest-advocate/src
 python setup.py build_ext --inplace
-```
-
-To build test the algorithm for one time-shift, run:
-
-```bash
-python tester_single.py 
-#> Numba:          0.00054264 s,   mean_dist: 0.185051 s
-#> Cython:         0.00045919 s,   mean_dist: 0.185051 s
 ```
 
 To build and test the algorithm for one a search range or multiple time-shifts, run:
 
 ```bash
-python tester_search.py 
-#> Numba:          1.27184391 s,   mean_dist: [3.15       0.07923757] s
-#> Cython:         1.06847000 s,   mean_dist: [3.15       0.07923757] s
+python run.py 
+#>Numba:          2.23124337 s,    detected time shift: 3.15 s,    minimal mean distance: 0.079412 s
+#>_Cython:        2.18392205 s,    detected time shift: 3.15 s,    minimal mean distance: 0.079412 s
+#>Cython:         1.93009925 s,    detected time shift: 3.15 s,    minimal mean distance: 0.079412 s
 ```
 
-Therefore, the Cython-version is a little bit faster than numba.
+Therefore, the Cython-version is even a little bit faster than numba.
+
+
+## Run the tests
+
+Run the testfile:
+
+```bash
+cd nearest-advocate/src
+python tests/test_nearest_advocate.py
+#> ok
+```
 
 
 ## Development of Scipy
