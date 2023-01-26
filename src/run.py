@@ -5,8 +5,7 @@ import time
 import numpy as np
 np.random.seed(0)
 
-from numba import njit
-from nearest_advocate import nearest_advocate
+from nearest_advocate_nb import nearest_advocate
 
 
 N = 100_000               # number of events in the random arrays
@@ -39,7 +38,17 @@ print(f"Numba:   \t{pytime:.8f} s, \t detected time shift: {time_shift:.2f} s, \
 
 
 # Time the Cython-solution
-from nearest_advocate_c import nearest_advocate
+from _nearest_advocate_util import _nearest_advocate
+start_time = time.time()
+np_nearest = _nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
+                                td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1, 
+                                dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
+pytime = time.time() - start_time
+time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
+print(f"_Cython:   \t{pytime:.8f} s, \t detected time shift: {time_shift:.2f} s, \t minimal mean distance: {min_mean_dist:.6f} s")
+
+# Time the Cython-solution
+from nearest_advocate import nearest_advocate
 start_time = time.time()
 np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
                                 td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1, 
