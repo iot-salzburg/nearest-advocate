@@ -1,5 +1,8 @@
-# nearest-advocate
+# Nearest-Advocate
+
 A post-hoc time synchronization algorithm for event-based time-series data
+
+This repository contains the source code, experiments for a paper as well as benchmarking of the code.
 
 
 ## Setup
@@ -11,7 +14,7 @@ cd /home/jovyan/work/Synchronization/
 git clone https://github.com/iot-salzburg/nearest-advocate
 cd nearest-advocate/src
 
-pip install numpy
+pip install -r requirements.txt
 ```
 
 
