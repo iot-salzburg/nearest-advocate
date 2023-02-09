@@ -76,7 +76,8 @@ def load_breath_rate(path_to_dir: str, verbose: int=1):
                         if "Reference" in file])
     signal_files = [file for file in os.listdir(path_to_dir) 
                     if "SportsSRS" in file]
-    
+    time_delay_df = pd.read_csv("TimeDelays_BreathRate.csv", index_col="Unnamed: 0")
+
     # iterate through ref_files and load the data pairwise
     pair_dataset = list()
     for ref_file in ref_files:
@@ -89,9 +90,15 @@ def load_breath_rate(path_to_dir: str, verbose: int=1):
                 break
         else:
             continue
+        
+        # get and check if the sync was successful
+        sync_res = time_delay_df.loc["P" + pid + "_SportsSRS_FlowReversals_RUNS_MERGED.csv"]        
+        if not sync_res["is_successfull"]:
+            continue
+            
         if verbose >= 1:
             print(f"Loading files {ref_file} and {sig_file}.")
-        
+            
         # load reference file
         arr_ref = pd.read_csv(
             os.path.join(path_to_dir, ref_file), sep=";", usecols=["Time"], 
@@ -103,10 +110,13 @@ def load_breath_rate(path_to_dir: str, verbose: int=1):
             os.path.join(path_to_dir, sig_file), sep=";", usecols=["Time"], 
             converters={"Time": lambda x: float(x.replace(",", "."))}
         )["Time"].values
-
+        # adapt the signal array by a linear time scale and shift by td_hat
+        arr_sig = arr_sig * sync_res["sps_hat"] + sync_res["td_hat"]
+        
         # append to heart_beat_dataset
         pair_dataset.append((arr_ref, arr_sig))
     return pair_dataset
+
 
 def load_step_rate(path_to_dir: str, verbose: int=1):
     """Loads all pairs of breath rate data (from Bra4Vit).
@@ -127,7 +137,8 @@ def load_step_rate(path_to_dir: str, verbose: int=1):
                         if "Reference" in file])
     signal_files = [file for file in os.listdir(path_to_dir) 
                     if "SportsSRS" in file]
-    
+    time_delay_df = pd.read_csv("TimeDelays_Strides.csv", index_col="Unnamed: 0")
+            
     # iterate through ref_files and load the data pairwise
     pair_dataset = list()
     for ref_file in ref_files:
@@ -140,6 +151,12 @@ def load_step_rate(path_to_dir: str, verbose: int=1):
                 break
         else:
             continue
+            
+        # get and check if the sync was successful
+        sync_res = time_delay_df.loc["P" + pid + "_SportsSRS_Strides_RUNS_MERGED.csv"]       
+        if not sync_res["is_successfull"]:
+            continue
+            
         if verbose >= 1:
             print(f"Loading files {ref_file} and {sig_file}.")
         
@@ -154,6 +171,8 @@ def load_step_rate(path_to_dir: str, verbose: int=1):
             os.path.join(path_to_dir, sig_file), sep=";", usecols=["x"], 
             converters={"x": lambda x: float(x.replace(",", "."))}
         )["x"].values
+        # adapt the signal array by a linear time scale and shift by td_hat
+        arr_sig = arr_sig * sync_res["sps_hat"] + sync_res["td_hat"]
 
         # append to heart_beat_dataset
         pair_dataset.append((arr_ref, arr_sig))
