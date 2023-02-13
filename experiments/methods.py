@@ -250,9 +250,9 @@ def pearson_cc(arr_ref: np.ndarray, arr_sig: np.ndarray,
         arr_sig_cont[arr_sig_cont < l_bound] = l_bound; arr_sig_cont[arr_sig_cont > u_bound] = u_bound; 
 
     # calculte the correlation
-    corrs = correlate(arr_sig_cont, arr_ref_cont, mode=mode) / np.sqrt(
-        (correlate(arr_ref_cont, arr_ref_cont, mode=mode)[int(len(arr_ref_cont)/2)] 
-         * correlate(arr_sig_cont, arr_sig_cont, mode=mode)[int(len(arr_sig_cont)/2)]))
+    corrs = correlate(arr_sig_cont, arr_ref_cont, mode=mode, method=method) / np.sqrt(
+        (correlate(arr_ref_cont, arr_ref_cont, mode=mode, method=method)[int(len(arr_ref_cont)/2)] 
+         * correlate(arr_sig_cont, arr_sig_cont, mode=mode, method=method)[int(len(arr_sig_cont)/2)]))
     # corrs_ones = correlate(arr_sig_ones, arr_ref_ones, mode=mode, method=method)
     # corrs_ones /= corrs_ones.max()
     time_lags = stepwidth * correlation_lags(
@@ -389,5 +389,5 @@ def dynamic_linear_timewarping(arr_ref: np.ndarray, arr_sig: np.ndarray, step_pa
             element_shift_modus = np.median(element_shifts)
             time_shift = element_shift_modus * DTW_STEPWIDTH
         else:
-            time_shift = 0.0
+            time_shift = np.nan
     return time_shift, alignment
