@@ -4,7 +4,6 @@ from numpy.testing import assert_equal, assert_almost_equal
 # from scipy.signal import nearest_advocate
 import sys
 sys.path.append(".")
-from nearest_advocate import nearest_advocate
 
 SEED = 0
 
@@ -132,6 +131,28 @@ def test_nearest_advocate_base_noverlap():
 
 
 if __name__ == "__main__":
+    print("Testing numba-version:  \t", end="")
+    from nearest_advocate_nb import nearest_advocate
+    test_nearest_advocate_base()
+    test_nearest_advocate_edge()
+    test_nearest_advocate_base_defmax()
+    test_nearest_advocate_base_fewoverlap()
+    test_nearest_advocate_base_nopadding()
+    test_nearest_advocate_base_noverlap()
+    print("ok")
+    
+    print("Testing Cython-version:  \t", end="")
+    from nearest_advocate_c import nearest_advocate
+    test_nearest_advocate_base()
+    test_nearest_advocate_edge()
+    test_nearest_advocate_base_defmax()
+    test_nearest_advocate_base_fewoverlap()
+    test_nearest_advocate_base_nopadding()
+    test_nearest_advocate_base_noverlap()
+    print("ok")
+    
+    print("Testing Python-version:  \t", end="")
+    from nearest_advocate_python import nearest_advocate
     test_nearest_advocate_base()
     test_nearest_advocate_edge()
     test_nearest_advocate_base_defmax()
