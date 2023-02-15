@@ -7,7 +7,7 @@ np.random.seed(0)
 
 
 
-N = 10_000               # number of events in the random arrays
+N = 1_000               # number of events in the random arrays
 TIME_SHIFT = np.pi        # true time-shift between the two arrays
 DEF_DIST = 0.25           # default values for dist_max and dist_padding of nearest_advocate
 REGULATE_PADDINGS = True  # regulate the paddings in nearest_advocate

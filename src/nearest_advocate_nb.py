@@ -66,17 +66,14 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
         # Step 3: regular case
         if arr_sig[sig_idx] < arr_ref[-1]:
             # forward arr_ref and then arr_sig until regalar case
-            while ref_idx+1 < l_arr_ref and arr_ref[ref_idx+1] <= arr_sig[sig_idx]:
+            while arr_ref[ref_idx+1] <= arr_sig[sig_idx] and ref_idx < l_arr_ref-1:
                 ref_idx += 1
-            if ref_idx+1 >= l_arr_ref: 
-                sig_idx += 1
-                continue
-            # Invariant: arr_ref[ref_idx] < arr_sig[sig_idx] < arr_ref[ref_idx+1]
-            # assert arr_ref[ref_idx] <= arr_sig[sig_idx]
-            # assert arr_sig[sig_idx] < arr_ref[ref_idx+1]
-            
-            cum_distance += min(arr_sig[sig_idx]-arr_ref[ref_idx], arr_ref[ref_idx+1]-arr_sig[sig_idx], dist_max) 
-            counter += 1
+            if ref_idx < l_arr_ref:  # the first inequality broke
+                # Invariant: arr_ref[ref_idx] <= arr_sig[sig_idx] < arr_ref[ref_idx+1]
+                # assert arr_ref[ref_idx] <= arr_sig[sig_idx]
+                # assert arr_sig[sig_idx] < arr_ref[ref_idx+1]
+                cum_distance += min(arr_sig[sig_idx]-arr_ref[ref_idx], arr_ref[ref_idx+1]-arr_sig[sig_idx], dist_max) 
+                counter += 1
         # Step 4: match trailing reference timestamps with last signal timestamp
         elif regulate_paddings:  
             # Invariant: arr_ref[ref_idx+1] <= arr_sig[sig_idx], given by the else case
@@ -88,7 +85,6 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
                 cum_distance += (l_arr_sig - sig_idx) * dist_padding
                 counter += (l_arr_sig - sig_idx)
                 break # stop, because the last values can be aggregated
-                
         sig_idx += 1
     
     # return mean cumulative distance between found advocate events

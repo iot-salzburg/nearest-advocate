@@ -10,17 +10,14 @@ def nearest_advocate_inner(
     # Regular case for nearest advocate match
     while sig_idx < len(arr_sig):
         if arr_sig[sig_idx] < arr_ref[-1]:
-            while ref_idx+1 < len(arr_ref) and 
-                            arr_ref[ref_idx+1] <= arr_sig[sig_idx]:
-                ref_idx += 1  # forward arr_ref
-            if ref_idx+1 >= len(arr_ref): 
-                sig_idx += 1  # forward arr_sig
-                continue
-            # Invariant: arr_ref[ref_idx] < arr_sig[sig_idx]
-            #       and: arr_sig[sig_idx] < arr_ref[ref_idx+1]
-            cum_distance += min(arr_sig[sig_idx]-arr_ref[ref_idx], 
-                    arr_ref[ref_idx+1]-arr_sig[sig_idx], dist_max) 
-            counter += 1      # increment number of matches
+            while arr_ref[ref_idx+1] <= arr_sig[sig_idx] and ref_idx < l_arr_ref-1:
+                ref_idx += 1
+            if ref_idx < l_arr_ref:  # the first inequality broke
+                # Invariant: arr_ref[ref_idx] <= arr_sig[sig_idx]
+                #       and: arr_sig[sig_idx] < arr_ref[ref_idx+1]
+                cum_distance += min(arr_sig[sig_idx]-arr_ref[ref_idx], 
+                        arr_ref[ref_idx+1]-arr_sig[sig_idx], dist_max) 
+                counter += 1      # increment number of matches
         sig_idx += 1  # increment signal index        
     # return mean cumulative distance of advocate events
     return cum_distance / counter

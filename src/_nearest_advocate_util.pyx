@@ -126,18 +126,15 @@ cdef np.float32_t _nearest_advocate_single_c(np.ndarray[np.float32_t, ndim=1] ar
     while sig_idx < l_arr_sig_c:
         # Step 3: regular case
         if arr_sig_c[sig_idx] < arr_ref_c[-1]:
-            # forward arr_ref_c and then arr_sig_c until regalar case
-            while ref_idx+1 < l_arr_ref_c and arr_ref_c[ref_idx+1] <= arr_sig_c[sig_idx]:
+            # forward arr_ref and then arr_sig until regalar case
+            while arr_ref_c[ref_idx+1] <= arr_sig_c[sig_idx] and ref_idx < l_arr_ref_c-1:
                 ref_idx += 1
-            if ref_idx+1 >= l_arr_ref_c: 
-                sig_idx += 1
-                continue
-            # Invariant: arr_ref_c[ref_idx] < arr_sig_c[sig_idx] < arr_ref_c[ref_idx+1]
-            # assert arr_ref_c[ref_idx] <= arr_sig_c[sig_idx]
-            # assert arr_sig_c[sig_idx] < arr_ref_c[ref_idx+1]
-            
-            cum_distance += min(arr_sig_c[sig_idx]-arr_ref_c[ref_idx], arr_ref_c[ref_idx+1]-arr_sig_c[sig_idx], dist_max) 
-            counter += 1
+            if ref_idx < l_arr_ref_c:  # the first inequality broke
+                # Invariant: arr_ref_c[ref_idx] < arr_sig_c[sig_idx] < arr_ref_c[ref_idx+1]
+                # assert arr_ref_c[ref_idx] <= arr_sig_c[sig_idx]
+                # assert arr_sig_c[sig_idx] < arr_ref_c[ref_idx+1]
+                cum_distance += min(arr_sig_c[sig_idx]-arr_ref_c[ref_idx], arr_ref_c[ref_idx+1]-arr_sig_c[sig_idx], dist_max) 
+                counter += 1
         # Step 4: match trailing reference timestamps with last signal timestamp
         elif regulate_paddings:  
             # Invariant: arr_ref_c[ref_idx+1] <= arr_sig_c[sig_idx], given by the else case
@@ -149,7 +146,6 @@ cdef np.float32_t _nearest_advocate_single_c(np.ndarray[np.float32_t, ndim=1] ar
                 cum_distance += (l_arr_sig_c - sig_idx) * dist_padding
                 counter += (l_arr_sig_c - sig_idx)
                 break # stop, because the last values can be aggregated
-                
         sig_idx += 1
 
     # return mean cumulative distance between found advocate events
