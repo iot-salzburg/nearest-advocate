@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+"""A time delay estimation method for event-based time-series Cython."""
+
+
 import numpy as np
 cimport numpy as np
 
