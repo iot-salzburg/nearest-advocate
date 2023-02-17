@@ -1,5 +1,11 @@
+#!/usr/bin/env python
+"""A time delay estimation method for event-based time-series caller for Cython"""
+
+import sys
 import numpy as np
-from ._nearest_advocate_util import _nearest_advocate
+sys.path.append(".")
+from _nearest_advocate_cython_util import _nearest_advocate
+
 
 def nearest_advocate(arr_ref, arr_sig,
                      td_min, td_max, sps=10, sparse_factor=1,
@@ -58,7 +64,7 @@ def nearest_advocate(arr_ref, arr_sig,
     
     >>> time_shifts = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, td_min=-60, td_max=60, sps=20)
     >>> time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
-    >>> print(time_shift, min_mean_dist)
+    >>> print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
     3.15, 0.079508
     
     Plot the resulting table
@@ -81,7 +87,6 @@ def nearest_advocate(arr_ref, arr_sig,
     assert isinstance(dist_max, float)
     assert isinstance(regulate_paddings, bool)
     assert isinstance(dist_padding, float)
-    
     # call and return the cython function
     return _nearest_advocate(arr_ref.astype(np.float32), arr_sig.astype(np.float32), 
                              td_min=td_min, td_max=td_max, sps=sps, sparse_factor=sparse_factor, 

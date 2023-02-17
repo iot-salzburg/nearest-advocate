@@ -131,3 +131,4 @@ dmypy.json
 
 # Custom ignores
 experiments/fig
+howto-notes.md

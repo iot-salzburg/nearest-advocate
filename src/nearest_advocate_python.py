@@ -1,11 +1,5 @@
 #!/usr/bin/env python
-"""Post-hoc synchronization method for event-based time-series, numba implementation"""
-
-__author__ = "Christoph Schranz"
-__copyright__ = "Copyright 2022, Salzburg Research Forschungsg. mbH"
-__version__ = "1.0.0"
-__maintainer__ = "Christoph Schranz"
-__credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
+"""A time delay estimation method for event-based time-series in Python."""
 
 
 import numpy as np

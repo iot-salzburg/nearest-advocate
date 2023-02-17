@@ -1,0 +1,30 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "numpy>=1.16",
+    "wheel",
+    "setuptools_scm[toml]>=6.0",
+#    "cython>=0.28",
+    "numba>=0.55",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nearest_advocate"
+version = "0.1.5"
+authors = [
+  { name="Christoph Schranz", email="christoph.schranz@salzburgresearch.at" },
+  { name="Mathias Schmoigl-Tonis", email="mathias.schmoigl-tonis@salzburgresearch.at" },
+]
+description = "A time delay estimation method for event-based time-series."
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/iot-salzburg/nearest-advocate"
+"Bug Tracker" = "https://github.com/iot-salzburg/nearest-advocate/issues"
