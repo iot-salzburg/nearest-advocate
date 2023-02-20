@@ -1,8 +1,16 @@
 # Nearest-Advocate
 
-A time delay estimation method for event-based time-series.
+**A time delay estimation method for event-based time-series.**
 
 This repository contains the source code, demo data, research experiments as well as benchmarking of the code and is based on the Github-Repository [iot-salzburg/nearest-advocate](https://github.com/iot-salzburg/nearest-advocate).
+
+
+## Scope of the package
+
+This package focuses on the time delay estimation between two event-based time-series that are relatively shifted by an unknown time offset. An event-based time-series is given by a set of timestamps of certain events.
+If you want to guarantee synchronous measurements in advance or estimate the time delay of continuous measurements sampled at a constant rate, you might want to use other methods. 
+However, in some use cases, performing an event detection and then estimating the relative time delay has advantages.
+The Nearest Advocate method provides a **precise time delay estimation in event-based time-series** that is **robust against imprecise timestamps, a high fraction of missing events, and clock drift**.
 
 
 ## Quickstart
@@ -13,7 +21,7 @@ Install the package with:
 pip install nearest_advocate
 ```
 
-Open Python and mport and use it for time delay estimation of event-based time-series:
+Open Python and import and use it for time delay estimation of event-based time-series:
 
 ```python
 import numpy as np
@@ -27,16 +35,16 @@ arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=1000)))
 arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=1000))
 ```
 
-The function `nearest_advocate.nearest_advocate` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both array (lower is better). 
+The function `nearest_advocate.nearest_advocate` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both arrays (lower is better). 
 
 ```python
-time_shifts = nearest_advocate.nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, td_min=-60, td_max=60, sps=10)
+time_shifts = nearest_advocate.nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, td_min=-60, td_max=60, sps=20)
 time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
 print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
 #> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
 ```
 
-Create a plot of the resulting characteristic curve
+Create a plot of the resulting characteristic curve of Nearest Advocate, the global minimum of the curve is used as time delay estimation.
 
 ```python 
 import matplotlib.pyplot as plt
@@ -46,9 +54,13 @@ plt.xlim(0, 8)
 plt.xlabel("Time delay (s)")
 plt.ylabel("Mean distance (s)")
 plt.legend(loc="lower right")
-plt.savefig("tmp.png")
+plt.savefig("time_delay_estimation.png")
 plt.show()
 ```
+
+
+![time_delay_estimation](time_delay_estimation.png)
+
 
 
 ## Building from source
@@ -76,10 +88,9 @@ python setup.py build_ext --inplace
 
 Currently, the Cython-version is under development and will be available soon.
 
-Run the testfile:
+Run the test scripts:
 
 ```bash
-cd nearest-advocate
 python tests/test_algorithm.py
 #> Testing numba-version:          ok
 #> Testing Cython-version:         ok
@@ -99,7 +110,7 @@ python tests/test_performances.py
 
 ## Reproduce the research experiments
 
-In the directory [nearest_advocate/experiments](https://github.com/iot-salzburg/nearest-advocate/tree/main/experiments), there are multiple Jupyter Notebooks that contain experiements based on data in the `data` directory.
+In the directory [nearest_advocate/experiments](https://github.com/iot-salzburg/nearest-advocate/tree/main/experiments), multiple Jupyter Notebooks contain experiments based on data in the `data` directory.
 
 
 <!-- ## Development of Scipy
