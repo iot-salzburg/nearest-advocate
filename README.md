@@ -59,8 +59,7 @@ plt.show()
 ```
 
 
-![time_delay_estimation](time_delay_estimation.png)
-
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/time_delay_estimation.png "Time Delay Estimation")
 
 
 ## Building from source
