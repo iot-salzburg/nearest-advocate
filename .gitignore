@@ -130,5 +130,5 @@ dmypy.json
 .pyre/
 
 # Custom ignores
-experiments/fig
+experiments/
 howto-notes.md
