@@ -71,9 +71,9 @@ def nearest_advocate(arr_ref, arr_sig,
 
     >>> import matplotlib.pyplot as plt
     >>> plt.plot(time_shifts[:,0], time_shifts[:,1], color="steelblue", label="Mean distance")
-    >>> plt.vlines(x=time_shift, ymin=0.05, ymax=0.25, color="firebrick", label=f"Shift = {time_shift:.2f}s")
-    >>> plt.xlim(0, 8)
-    >>> plt.xlabel("Time shift (s)")
+    >>> plt.vlines(x=time_shift, ymin=min_mean_dist, ymax=np.mean(time_shifts[:,1]), color="firebrick", label=f"Shift = {time_shift:.2f}s")
+    >>> plt.xlim(time_shift-4, time_shift+4)
+    >>> plt.xlabel("Time delay (s)")
     >>> plt.ylabel("Mean distance (s)")
     >>> plt.legend(loc="lower right")
     >>> plt.show()

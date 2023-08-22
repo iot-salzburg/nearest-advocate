@@ -5,7 +5,7 @@ import sys
 import time
 import numpy as np
 np.random.seed(0)
-sys.path.append(".")
+sys.path.append("src")
 
 N = 1_000                 # number of events in the random arrays
 TIME_SHIFT = np.pi        # true time-shift between the two arrays
@@ -23,15 +23,15 @@ arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=N)))
 arr_sig = np.sort(arr_ref + TIME_SHIFT + np.random.normal(loc=0, scale=0.1, size=N))
 
 # Time the numba-solution
-from src.nearest_advocate_numba import nearest_advocate
+from nearest_advocate_numba import nearest_advocate
 # run once before the test to just-in-time compile it
-np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
-                              td_min=-1, td_max=1, sps=SAMPLES_PER_S, sparse_factor=1, 
+np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
+                              td_min=-1, td_max=1, sps=SAMPLES_PER_S, sparse_factor=1,
                               dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
 
 start_time = time.time()
-np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
-                              td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1, 
+np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
+                              td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1,
                               dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
 pytime = time.time() - start_time
 time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
@@ -40,35 +40,34 @@ print(f"Numba:   \t{pytime:.8f} s, \t detected time shift: {time_shift:.2f} s, \
 # # Time the Cython-solution
 # from src.nearest_advocate_cython import nearest_advocate
 # start_time = time.time()
-# np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
-#                                 td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1, 
+# np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
+#                                 td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1,
 #                                 dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
 # pytime = time.time() - start_time
 # time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
 # print(f"Cython:   \t{pytime:.8f} s, \t detected time shift: {time_shift:.2f} s, \t minimal mean distance: {min_mean_dist:.6f} s")
 
 # Time the pure Python-solution
-from src.nearest_advocate_python import nearest_advocate
+from nearest_advocate_python import nearest_advocate
 start_time = time.time()
-np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
-                              td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1, 
+np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
+                              td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1,
                               dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
 pytime = time.time() - start_time
 time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:,1])]
 print(f"Python:   \t{pytime:.8f} s, \t detected time shift: {time_shift:.2f} s, \t minimal mean distance: {min_mean_dist:.6f} s")
 
 
-
 print("\n" + " Compare versions for multiple lengths ".center(60, "#"))
 print("Method \t" + "".join([str(l).center(10) for l in LENGTHS]))
 
 # Time the numba-solution
-from src.nearest_advocate_numba import nearest_advocate
+from nearest_advocate_numba import nearest_advocate
 # run once before the test to just-in-time compile it
-_ = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
-                      td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1, 
-                      dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS,
-                      dist_padding=DEF_DIST)
+_ = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
+                     td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S, sparse_factor=1,
+                     dist_max=DEF_DIST, regulate_paddings=REGULATE_PADDINGS,
+                     dist_padding=DEF_DIST)
 print("Numba: \t", end="")
 for length in LENGTHS:
     # Create two related event-based array, they differ by a time-shift and gaussian noise
@@ -76,15 +75,15 @@ for length in LENGTHS:
     arr_sig = np.sort(arr_ref + TIME_SHIFT + np.random.normal(loc=0, scale=0.1, size=length))
 
     start_time = time.time()
-    np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
+    np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
                                   td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S,
-                                  sparse_factor=1, dist_max=DEF_DIST, 
+                                  sparse_factor=1, dist_max=DEF_DIST,
                                   regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
     print(f"{time.time()-start_time:.6f}".center(10), end="")
-    
+
 
 # # Time the Cython-solution
-# from src.nearest_advocate_cython import nearest_advocate
+# from nearest_advocate_cython import nearest_advocate
 # print("Cython: \t", end="")
 # for length in LENGTHS:
 #     # Create two related event-based array, they differ by a time-shift and gaussian noise
@@ -92,9 +91,8 @@ for length in LENGTHS:
 #     arr_sig = np.sort(arr_ref + TIME_SHIFT + np.random.normal(loc=0, scale=0.1, size=length))
 
 #     start_time = time.time()
-#     np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, 
+#     np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
 #                                   td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S,
-#                                   sparse_factor=1, dist_max=DEF_DIST, 
+#                                   sparse_factor=1, dist_max=DEF_DIST,
 #                                   regulate_paddings=REGULATE_PADDINGS, dist_padding=DEF_DIST)
 #     print(f"{time.time()-start_time:.6f}".center(10), end="")
-    

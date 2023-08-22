@@ -3,13 +3,14 @@
 
 __author__ = "Christoph Schranz"
 __copyright__ = "Copyright 2023, Salzburg Research"
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 __maintainer__ = "Christoph Schranz, Mathias Schmoigl-Tonis"
 __credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
 
 
-import numpy as np
 from typing import Optional
+
+import numpy as np
 
 # Using the numba-implementation right now
 from nearest_advocate_numba import nearest_advocate as _nearest_advocate
@@ -92,14 +93,18 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
 
     >>> import matplotlib.pyplot as plt
     >>> plt.plot(time_shifts[:,0], time_shifts[:,1], color="steelblue", label="Mean distance")
-    >>> plt.vlines(x=time_shift, ymin=0.05, ymax=0.25, color="firebrick", label=f"Shift = {time_shift:.2f}s")
-    >>> plt.xlim(0, 8)
+    >>> plt.vlines(x=time_shift, ymin=min_mean_dist, ymax=np.mean(time_shifts[:,1]), color="firebrick", label=f"Shift = {time_shift:.2f}s")
+    >>> plt.xlim(time_shift-4, time_shift+4)
     >>> plt.xlabel("Time delay (s)")
     >>> plt.ylabel("Mean distance (s)")
     >>> plt.legend(loc="lower right")
-    >>> plt.savefig("tmp.png")
     >>> plt.show()
     '''
+    # subtract the minimal timestamp to avoid floating point error
+    min_event_time = min(arr_ref[0], arr_sig[0])
+    arr_ref -= min_event_time
+    arr_sig -= min_event_time
+
     # cast the arrays to numpy arrays
     arr_ref_ = np.array(arr_ref, dtype=np.float32)
     arr_sig_ = np.array(arr_sig, dtype=np.float32)

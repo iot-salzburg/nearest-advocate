@@ -4,9 +4,8 @@
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
-# from scipy.signal import nearest_advocate
 import sys
-sys.path.append(".")
+sys.path.append("src")
 
 SEED = 0
 
@@ -133,7 +132,44 @@ def test_nearest_advocate_base_noverlap():
     assert_equal(min_mean_dist, DEF_DIST)
 
 
+def test_nearest_advocate_bigtime():
+    N = 1_000
+    DEF_DIST = 0.25
+    time_unix = 1692720007.811548
+
+    np.random.seed(SEED)
+    arr_ref = np.sort(np.cumsum(np.random.normal(
+        loc=1, scale=0.25, size=N)) + time_unix)
+    arr_sig = np.sort(arr_ref + np.pi + np.random.normal(
+        loc=0, scale=0.1, size=N))
+
+    # subtract the minimal event timestamp
+    min_event_time = min(arr_ref[0], arr_sig[0])
+    arr_ref -= min_event_time
+    arr_sig -= min_event_time
+
+    np_nearest = nearest_advocate(
+        arr_ref=arr_ref, arr_sig=arr_sig,
+        td_min=-60, td_max=60, sps=20, sparse_factor=1,
+        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
+    time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
+
+    assert_almost_equal(time_shift, np.pi, decimal=1)
+    assert_almost_equal(min_mean_dist, 0.07694374, decimal=2)
+
+
 if __name__ == "__main__":
+    print("Testing generic-version:  \t", end="")
+    from nearest_advocate import nearest_advocate
+    test_nearest_advocate_base()
+    test_nearest_advocate_edge()
+    test_nearest_advocate_base_defmax()
+    test_nearest_advocate_base_fewoverlap()
+    test_nearest_advocate_base_nopadding()
+    test_nearest_advocate_base_noverlap()
+    test_nearest_advocate_bigtime()
+    print("ok")
+
     print("Testing numba-version:  \t", end="")
     from nearest_advocate_numba import nearest_advocate
     test_nearest_advocate_base()
@@ -142,8 +178,9 @@ if __name__ == "__main__":
     test_nearest_advocate_base_fewoverlap()
     test_nearest_advocate_base_nopadding()
     test_nearest_advocate_base_noverlap()
+    # test_nearest_advocate_bigtime()  # only for caller
     print("ok")
-    
+
     # print("Testing Cython-version:  \t", end="")
     # from nearest_advocate_cython import nearest_advocate
     # test_nearest_advocate_base()
@@ -153,7 +190,7 @@ if __name__ == "__main__":
     # test_nearest_advocate_base_nopadding()
     # test_nearest_advocate_base_noverlap()
     # print("ok")
-    
+
     print("Testing Python-version:  \t", end="")
     from nearest_advocate_python import nearest_advocate
     test_nearest_advocate_base()
@@ -162,5 +199,5 @@ if __name__ == "__main__":
     test_nearest_advocate_base_fewoverlap()
     test_nearest_advocate_base_nopadding()
     test_nearest_advocate_base_noverlap()
+    # test_nearest_advocate_bigtime()  # only for caller
     print("ok")
-    

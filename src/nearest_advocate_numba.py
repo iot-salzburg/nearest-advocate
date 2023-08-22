@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 """A time delay estimation method for event-based time-series in numba."""
 
-
-import numba
-import numpy as np
 from typing import Optional
+
+import numpy as np
+
+try:
+    import numba
+except ModuleNotFoundError:
+    print("\nError: The 'numba' module is not installed.")
+    print("You can install it using the following command:")
+    print("pip install numba\n")
 
 
 @numba.njit(parallel=False)
@@ -109,8 +115,8 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
         Number of investigated time-shifts per second. Default None: sets it at 10 divided by the median gap of each array.
     sparse_factor : int, optional
         Factor for the sparseness of `arr_sig` for the calculation, higher is faster at the cost of precision (default 1).
-    dist_max : float, optional
-        Maximal accepted distances between two advocate events. Default None: 1/4 of the median gap of each array.
+    dist_max : float
+        Maximal accepted distances between two advocate events. Should be around 1/4 of the average gap of each array.
     regulate_paddings : bool, optional
         Regulate non-overlapping events in `arr_sig` with a maximum distance of dist_padding (default True).
     dist_padding : float, optional
@@ -147,8 +153,8 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
 
     >>> import matplotlib.pyplot as plt
     >>> plt.plot(time_shifts[:,0], time_shifts[:,1], color="steelblue", label="Mean distance")
-    >>> plt.vlines(x=time_shift, ymin=0.05, ymax=0.25, color="firebrick", label=f"Shift = {time_shift:.2f}s")
-    >>> plt.xlim(0, 8)
+    >>> plt.vlines(x=time_shift, ymin=min_mean_dist, ymax=np.mean(time_shifts[:,1]), color="firebrick", label=f"Shift = {time_shift:.2f}s")
+    >>> plt.xlim(time_shift-4, time_shift+4)
     >>> plt.xlabel("Time delay (s)")
     >>> plt.ylabel("Mean distance (s)")
     >>> plt.legend(loc="lower right")
