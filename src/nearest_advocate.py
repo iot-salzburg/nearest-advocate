@@ -3,7 +3,7 @@
 
 __author__ = "Christoph Schranz"
 __copyright__ = "Copyright 2023, Salzburg Research"
-__version__ = "0.1.9"
+__version__ = "0.1.9.1"
 __maintainer__ = "Christoph Schranz, Mathias Schmoigl-Tonis"
 __credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
 
@@ -100,16 +100,16 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
     >>> plt.legend(loc="lower right")
     >>> plt.show()
     '''
-    # subtract the minimal timestamp to avoid floating point error
+    # cast the arrays to numpy arrays, subtract the minimal timestamp to avoid floating point error
     min_event_time = min(arr_ref[0], arr_sig[0])
-    arr_ref -= min_event_time
-    arr_sig -= min_event_time
+    arr_ref_ = np.array(arr_ref - min_event_time, dtype=np.float32)
+    arr_sig_ = np.array(arr_sig - min_event_time, dtype=np.float32)
 
-    # cast the arrays to numpy arrays
-    arr_ref_ = np.array(arr_ref, dtype=np.float32)
-    arr_sig_ = np.array(arr_sig, dtype=np.float32)
+    # Assert input properties
     assert len(arr_ref_.shape) == 1  # must be a 1D array
     assert len(arr_sig_.shape) == 1  # must be a 1D array
+    assert arr_ref_.shape[0] > 1    # reference array must have >= 2 elements
+    assert arr_sig_.shape[0] > 1    # signal array must have >= 2 elements
     assert isinstance(td_min, (int, float))
     assert isinstance(td_max, (int, float))
     assert isinstance(sparse_factor, int)

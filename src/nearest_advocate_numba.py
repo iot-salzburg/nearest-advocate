@@ -25,8 +25,6 @@ def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndar
     dist_padding (float): Distance assigned to non-overlapping (padding) events, should be 1/4 of the median gap of arr_ref. Only given if regulate_paddings is True
     '''
     # Assert input properties
-    assert arr_ref.shape[0] > 0    # reference array must be non-empty
-    assert arr_sig.shape[0] > 0    # signal array must be non-empty
     assert dist_max > 0.0          # maximal distance must be greater than 0.0
     if regulate_paddings:
         assert dist_padding > 0.0  # maximal distance for paddings must be greater than 0.0
