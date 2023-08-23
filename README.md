@@ -2,6 +2,11 @@
 
 **A time delay estimation method for event-based time-series.**
 
+[![PyPi version](https://badgen.net/pypi/v/nearest_advocate/)](https://pypi.org/project/nearest_advocate)
+[![PyPI download month](https://img.shields.io/pypi/dm/nearest_advocate.svg)](https://pypi.org/project/nearest-advocate/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7370958.svg)](https://doi.org/10.5281/zenodo.7370958)
+
 This repository contains the source code, demo data, research experiments as well as benchmarking of the code and is based on the Github-Repository [iot-salzburg/nearest-advocate](https://github.com/iot-salzburg/nearest-advocate).
 
 
