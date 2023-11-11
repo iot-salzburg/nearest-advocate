@@ -3,7 +3,7 @@
 
 __author__ = "Christoph Schranz"
 __copyright__ = "Copyright 2023, Salzburg Research"
-__version__ = "0.1.9.1"
+__version__ = "0.2.0.0"
 __maintainer__ = "Christoph Schranz, Mathias Schmoigl-Tonis"
 __credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
 
@@ -18,8 +18,7 @@ from nearest_advocate_numba import nearest_advocate_single as _nearest_advocate_
 
 
 def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.float32]',
-                            dist_max: float, dist_padding: float, regulate_paddings: bool = True
-                            ) -> float:
+                            dist_max: float) -> float:
     '''Calculates the synchronicity of two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
     arr_ref (np.array): Reference array or timestamps assumed to be correct
     arr_sig (np.array): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
@@ -30,15 +29,12 @@ def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndar
     # cast the arrays to numpy arrays
     arr_ref_ = np.array(arr_ref, dtype=np.float32)
     arr_sig_ = np.array(arr_sig, dtype=np.float32)
-    return _nearest_advocate_single(arr_ref=arr_ref_, arr_sig=arr_sig_,
-                                    dist_max=dist_max,
-                                    regulate_paddings=regulate_paddings, dist_padding=dist_padding)
+    return _nearest_advocate_single(arr_ref=arr_ref_, arr_sig=arr_sig_, dist_max=dist_max)
 
 
 def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.float32]',
-                     td_min: float, td_max: float, sps: Optional[float] = None,
-                     sparse_factor: int = 1, dist_max: Optional[float] = None,
-                     regulate_paddings: bool = True, dist_padding: Optional[float] = None
+                     td_min: float, td_max: float, dist_max: Optional[float] = None,
+                     sps: Optional[float] = None, sparse_factor: int = 1, symmetric=False
                      ) -> 'np.ndarray[(any, 2), np.float32]':
     '''Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max in steps of 1/sps distance. The synchronicity is given by the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
 
@@ -48,6 +44,8 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
         Sorted reference array (1-D) with timestamps assumed to be correct.
     arr_sig : array_like
         Sorted signal array (1-D) of timestamps, assumed to be shifted by an unknown constant time-delta.
+    dist_max : float
+        Maximal accepted distances between two advocate events. Should be around 1/4 of the average gap of each array.
     td_min : float
         Lower bound of the search space for the time-shift.
     td_max : float
@@ -56,12 +54,8 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
         Number of investigated time-shifts per second. Default None: sets it at 10 divided by the median gap of each array.
     sparse_factor : int, optional
         Factor for the sparseness of `arr_sig` for the calculation, higher is faster at the cost of precision (default 1).
-    dist_max : float, optional
-        Maximal accepted distances between two advocate events. Default None: 1/4 of the median gap of each array.
-    regulate_paddings : bool, optional
-        Regulate non-overlapping events in `arr_sig` with a maximum distance of dist_padding (default True).
-    dist_padding : float, optional
-        Distance assigned to non-overlapping (padding) events. Default None: 1/4 of the median gap of each array. Obsolete if `regulate_paddings` is False
+    symmetric : bool
+        Perform the Nearest Advocate algorithm symmetrically, i.e., both orders of the arrays and the results are averaged (default False).
 
     Returns
     -------
@@ -113,11 +107,9 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
     assert isinstance(td_min, (int, float))
     assert isinstance(td_max, (int, float))
     assert isinstance(sparse_factor, int)
-    assert isinstance(regulate_paddings, bool)
-    return _nearest_advocate(arr_ref=arr_ref_, arr_sig=arr_sig_,
-                             td_min=td_min, td_max=td_max, sps=sps,
-                             sparse_factor=sparse_factor, dist_max=dist_max,
-                             regulate_paddings=regulate_paddings, dist_padding=dist_padding)
+    return _nearest_advocate(arr_ref=arr_ref_, arr_sig=arr_sig_, dist_max=dist_max,
+                             td_min=td_min, td_max=td_max, sps=sps, sparse_factor=sparse_factor,
+                             symmetric=symmetric)
 
 
 if __name__ == "__main__":
@@ -126,9 +118,8 @@ if __name__ == "__main__":
     np.random.seed(0)
     arr_reference = np.cumsum(np.random.random(size=SIZE) + 0.5)
     arr_signal = arr_reference + np.random.normal(loc=0, scale=0.1, size=SIZE) + np.pi
-    print(nearest_advocate_single(arr_reference, arr_signal, dist_max=0.25, dist_padding=0.25))
+    print(nearest_advocate_single(arr_reference, arr_signal, dist_max=0.25))
 
     print("\nTesting Nearest Advocate for a search space:")
-    print(nearest_advocate(arr_reference, arr_signal, td_min=-10, td_max=10,
-                           sparse_factor=1, sps=None,
-                           dist_max=None, regulate_paddings=True, dist_padding=None)[:5])
+    print(nearest_advocate(arr_reference, arr_signal, dist_max=None,
+                           td_min=-10, td_max=10, sparse_factor=1, sps=None, symmetric=True)[:5])

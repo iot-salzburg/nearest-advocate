@@ -23,7 +23,7 @@ def test_nearest_advocate_base():
     np_nearest = nearest_advocate(
         arr_ref=arr_ref, arr_sig=arr_sig,
         td_min=-60, td_max=60, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
+        dist_max=DEF_DIST)
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
 
     assert_almost_equal(time_shift, np.pi, decimal=1)
@@ -43,7 +43,7 @@ def test_nearest_advocate_edge():
     np_nearest = nearest_advocate(
         arr_ref=arr_ref, arr_sig=arr_sig,
         td_min=-60, td_max=60, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
+        dist_max=DEF_DIST)
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
 
     assert_almost_equal(time_shift, np.pi, decimal=1)
@@ -52,7 +52,7 @@ def test_nearest_advocate_edge():
 
 def test_nearest_advocate_base_defmax():
     N = 1_000
-    DEF_DIST = 0.0
+    DEF_DIST = None
 
     np.random.seed(SEED)
     arr_ref = np.sort(np.cumsum(np.random.normal(
@@ -63,7 +63,7 @@ def test_nearest_advocate_base_defmax():
     np_nearest = nearest_advocate(
         arr_ref=arr_ref, arr_sig=arr_sig,
         td_min=-60, td_max=60, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
+        dist_max=DEF_DIST)
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
 
     assert_almost_equal(time_shift, np.pi, decimal=1)
@@ -72,7 +72,7 @@ def test_nearest_advocate_base_defmax():
 
 def test_nearest_advocate_base_fewoverlap():
     N = 1_000
-    DEF_DIST = 0.0
+    DEF_DIST = None
     TIME_SHIFT = 900
 
     np.random.seed(SEED)
@@ -84,37 +84,18 @@ def test_nearest_advocate_base_fewoverlap():
     np_nearest = nearest_advocate(
         arr_ref=arr_ref, arr_sig=arr_sig,
         td_min=850, td_max=950, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
+        dist_max=DEF_DIST)
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
 
     assert_almost_equal(time_shift, TIME_SHIFT, decimal=1)
     assert_almost_equal(min_mean_dist, 0.07674612, decimal=2)
 
 
-def test_nearest_advocate_base_nopadding():
-    N = 1_000
-    DEF_DIST = 0.25
-
-    np.random.seed(SEED)
-    arr_ref = np.sort(np.cumsum(np.random.normal(
-        loc=1, scale=0.25, size=N))).astype(np.float32)
-    arr_sig = np.sort(arr_ref + np.pi + np.random.normal(
-        loc=0, scale=0.1, size=N)).astype(np.float32)
-
-    np_nearest = nearest_advocate(
-        arr_ref=arr_ref, arr_sig=arr_sig,
-        td_min=-60, td_max=60, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=False)
-    time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
-
-    assert_almost_equal(time_shift, np.pi, decimal=1)
-    assert_almost_equal(min_mean_dist, 0.07690712, decimal=2)
-
 
 def test_nearest_advocate_base_noverlap():
     N = 100
     DEF_DIST = 0.25
-    TIME_SHIFT = 200
+    TIME_SHIFT = 1000
 
     np.random.seed(SEED)
     arr_ref = np.sort(np.cumsum(np.random.normal(
@@ -123,9 +104,8 @@ def test_nearest_advocate_base_noverlap():
         loc=0, scale=0.1, size=N)).astype(np.float32)
 
     np_nearest = nearest_advocate(
-        arr_ref=arr_ref, arr_sig=arr_sig,
-        td_min=-60, td_max=60, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=False)
+        arr_ref=arr_ref, arr_sig=arr_sig, dist_max=DEF_DIST,
+        td_min=-60, td_max=60, sps=20, sparse_factor=1)
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
 
     assert_almost_equal(time_shift, -60, decimal=1)  # each value is the same
@@ -151,11 +131,37 @@ def test_nearest_advocate_bigtime():
     np_nearest = nearest_advocate(
         arr_ref=arr_ref, arr_sig=arr_sig,
         td_min=-60, td_max=60, sps=20, sparse_factor=1,
-        dist_max=DEF_DIST, regulate_paddings=True, dist_padding=DEF_DIST)
+        dist_max=DEF_DIST)
     time_shift, min_mean_dist = np_nearest[np.argmin(np_nearest[:, 1])]
 
     assert_almost_equal(time_shift, np.pi, decimal=1)
     assert_almost_equal(min_mean_dist, 0.07694374, decimal=2)
+
+def test_nearest_advocate_vice_versa():
+    N = 1_000
+    DEF_DIST = 0.25
+
+    np.random.seed(SEED)
+    arr_ref = np.sort(np.cumsum(np.random.normal(
+        loc=1, scale=0.25, size=N))).astype(np.float32)
+    arr_sig = np.sort(arr_ref + np.pi + np.random.normal(
+        loc=0, scale=0.1, size=N)).astype(np.float32)
+
+    np_nearest = nearest_advocate(
+        arr_ref=arr_ref, arr_sig=arr_sig,
+        td_min=-60, td_max=60, sps=20, sparse_factor=1,
+        dist_max=DEF_DIST)
+    time_shift_left, min_mean_dist_left = np_nearest[np.argmin(np_nearest[:, 1])]
+
+    np_nearest = nearest_advocate(
+        arr_ref=-arr_ref[::-1], arr_sig=-arr_sig[::-1],
+        td_min=-60, td_max=60, sps=20, sparse_factor=1,
+        dist_max=DEF_DIST)
+    time_shift_right, min_mean_dist_right = np_nearest[np.argmin(np_nearest[:, 1])]
+
+    assert_almost_equal(time_shift_left, -time_shift_right, decimal=2)
+    assert_almost_equal(min_mean_dist_left, min_mean_dist_right, decimal=2)
+
 
 
 if __name__ == "__main__":
@@ -165,9 +171,9 @@ if __name__ == "__main__":
     test_nearest_advocate_edge()
     test_nearest_advocate_base_defmax()
     test_nearest_advocate_base_fewoverlap()
-    test_nearest_advocate_base_nopadding()
     test_nearest_advocate_base_noverlap()
     test_nearest_advocate_bigtime()
+    test_nearest_advocate_vice_versa()
     print("ok")
 
     print("Testing numba-version:  \t", end="")
@@ -176,8 +182,8 @@ if __name__ == "__main__":
     test_nearest_advocate_edge()
     test_nearest_advocate_base_defmax()
     test_nearest_advocate_base_fewoverlap()
-    test_nearest_advocate_base_nopadding()
     test_nearest_advocate_base_noverlap()
+    test_nearest_advocate_vice_versa()
     # test_nearest_advocate_bigtime()  # only for caller
     print("ok")
 
@@ -197,7 +203,7 @@ if __name__ == "__main__":
     test_nearest_advocate_edge()
     test_nearest_advocate_base_defmax()
     test_nearest_advocate_base_fewoverlap()
-    test_nearest_advocate_base_nopadding()
     test_nearest_advocate_base_noverlap()
     # test_nearest_advocate_bigtime()  # only for caller
+    test_nearest_advocate_vice_versa()
     print("ok")

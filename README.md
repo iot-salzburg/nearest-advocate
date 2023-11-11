@@ -48,7 +48,7 @@ time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
 print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
 #> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
 ```
-
+The time delay estimation is 3.15 seconds which is pretty close to the true one.
 Create a plot of the resulting characteristic curve of Nearest Advocate, the global minimum of the curve is used as time delay estimation.
 
 ```python
