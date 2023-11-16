@@ -13,7 +13,7 @@ sys.path.append("src")
 
 N = 10_000                # number of events in the random arrays
 TIME_SHIFT = np.pi        # true time-shift between the two arrays
-DEF_DIST = 0.25           # default values for dist_max and dist_padding of nearest_advocate
+DEF_DIST = 0.25           # default values for dist_max of nearest_advocate
 TD_MAX = 60               # search space of +-1 minutes
 TD_MIN = -60
 SAMPLES_PER_S = 20        # precision of the search space

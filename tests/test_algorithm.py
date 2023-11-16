@@ -193,7 +193,6 @@ if __name__ == "__main__":
     # test_nearest_advocate_edge()
     # test_nearest_advocate_base_defmax()
     # test_nearest_advocate_base_fewoverlap()
-    # test_nearest_advocate_base_nopadding()
     # test_nearest_advocate_base_noverlap()
     # print("ok")
 
