@@ -132,3 +132,4 @@ dmypy.json
 # Custom ignores
 experiments/
 howto-notes.md
+data/full_breath_vs_steps
