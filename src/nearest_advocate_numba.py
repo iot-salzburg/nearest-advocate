@@ -15,19 +15,25 @@ except ModuleNotFoundError:
 
 @numba.njit(parallel=False)
 def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.float32]',
-                            dist_max: float) -> float:
+                            dist_max: float, symmetric: bool = False) -> float:
     '''Calculates the synchronicity of two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
     arr_ref (np.array): Reference array or timestamps assumed to be correct
     arr_sig (np.array): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
     dist_max (float): Maximal accepted distances, should be 1/4 of the median gap of arr_ref
     '''
+    # If symmetric Nearest Advocate, call the algorithm recursively
+    if symmetric:
+        left = nearest_advocate_single(arr_ref, arr_sig, dist_max=dist_max, symmetric=False)
+        right = nearest_advocate_single(arr_sig, arr_ref, dist_max=dist_max, symmetric=False)
+        return left + right
+
     # Assert input properties
     assert dist_max > 0.0          # maximal distance must be greater than 0.0
 
     # store the lengths of the arrays
     l_arr_ref = len(arr_ref)
     l_arr_sig = len(arr_sig)
-    assert l_arr_ref > 2 and l_arr_sig > 2
+    assert l_arr_ref > 1 and l_arr_sig > 1
 
     ref_idx = 0              # index for arr_ref
     sig_idx = 0              # index for arr_sig
@@ -75,7 +81,7 @@ def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndar
 @numba.njit(parallel=False)
 def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td_max: float,
                      dist_max: Optional[float] = None, sps: Optional[float] = None, sparse_factor: int = 1,
-                     symmetric: bool=False
+                     symmetric: bool = False
                      ) -> 'np.ndarray[(any, 2), np.float32]':
     '''Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max in steps of 1/sps distance. The synchronicity is given by the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
 
@@ -139,12 +145,12 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td
     if symmetric:
         left = nearest_advocate(
             arr_ref, arr_sig, dist_max=dist_max, td_min=td_min, td_max=td_max,
-             sps=sps, sparse_factor=sparse_factor, symmetric=False
-             )
+            sps=sps, sparse_factor=sparse_factor, symmetric=False
+            )
         right = nearest_advocate(
             arr_sig, arr_ref, dist_max=dist_max, td_min=td_min, td_max=td_max,
-             sps=sps, sparse_factor=sparse_factor, symmetric=False
-             )
+            sps=sps, sparse_factor=sparse_factor, symmetric=False
+            )
         return (left + right) / 2
 
     # Assert properties of the arrays
