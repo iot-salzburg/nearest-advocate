@@ -68,7 +68,7 @@ def plot_windowed_result(df_results: pd.DataFrame, pred_y: np.ndarray,
         ylim = tuple(df_results["time_delta"].quantile([0.05, 0.95]).values + [-1.0, 1.0])
         plt.ylim(ylim)
         if save_fig:
-            plt.savefig(save_fig)
+            plt.savefig(save_fig, dpi=250)
         if verbose >= 1.5:
             plt.show()
         else:

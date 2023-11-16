@@ -80,6 +80,10 @@ def read_j_peaks(path_jpeaks: str, directory: str = None, array_key: Union[list,
     # read the path_jpeaks file, either the original or in another updated directory
     df_j = pd.read_csv(path_jpeaks)
 
+    # rename the
+    if "time" not in df_j.columns and len(df_j.columns) == 1:
+        df_j.rename(columns={df_j.columns[0]: "time"}, inplace=True)
+
     # extract the column of interest
     arr_j = None
     column_key_str = "time"

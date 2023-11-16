@@ -10,7 +10,7 @@ TD_SPS = 20.0  # time-delta to investigate for shift (>10 times the event freque
 SPS_REL = 1.0
 
 # Path to write the synced results
-PATH_SYNCED = "../data/preprocessed/j_peaks_synced/"
+PATH_SYNCED = "../data/HeartBeat_synched/"
 
 # output image format
 IMG_FORMAT = "png"
