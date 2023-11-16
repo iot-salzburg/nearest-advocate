@@ -133,3 +133,4 @@ dmypy.json
 experiments/
 howto-notes.md
 data/full_breath_vs_steps
+data/HeartBeat_synched/
