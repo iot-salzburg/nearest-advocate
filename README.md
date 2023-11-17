@@ -7,7 +7,10 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7370958.svg)](https://doi.org/10.5281/zenodo.7370958)
 
-This repository contains the source code, demo data, research experiments as well as benchmarking of the code and is based on the Github-Repository [iot-salzburg/nearest-advocate](https://github.com/iot-salzburg/nearest-advocate).
+This repository contains the source code, demonstration data, unit tests, benchmarks as well as research experiments for the Nearest Advocate Algorithm.
+
+- Github-Repository: [https://github.com/iot-salzburg/nearest-advocate](https://github.com/iot-salzburg/nearest-advocate)
+- Pip-Package: [https://pypi.org/project/nearest-advocate/](https://pypi.org/project/nearest-advocate/).
 
 
 ## Scope of the package
@@ -64,6 +67,47 @@ plt.show()
 
 
 ![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/time_delay_estimation.png "Time Delay Estimation")
+
+
+## Functionality
+
+### Symmetric Nearest Advocate
+
+To apply the Nearest Advocate algorithm symmetrically, just pass the flag `symmetric=True` in the method:
+
+```python
+time_shifts = nearest_advocate.nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, td_min=-60, td_max=60, sps=20, symmetric=True)
+time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
+print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
+#> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
+```
+
+
+### Clock-drift correction
+
+Using the NAd in sliding windows, it is possible to estimate the linear or non-linear trend of the relatve clock drift between two clocks. To do so, both event time-series should be very long in terms of their number of elements.
+A Jupyter notebook is provided to adapt this functionality to other applications [experiments/application_nonlinear_correction.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_nonlinear_correction.ipynb).
+
+Example of a linear clock-drift correction:
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/linear_correction_1.png.png "Linear clock-drift correction")
+
+Example of a subsequent nonlinear clock-drift correction:
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/nonlinear_correction_1.png.png "Nonlinear clock-drift correction")
+
+
+
+### Time Delay Estimation based on Different Observations
+
+This algorithm is so robust against data quality issues, that it is even possible to estimate the time-delay between two event-based measurements of different observations. In [experiments/application_different_observations.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_different_observations.ipynb) it is demonstrated how to apply the NAd for breathing and step events from the same participant, that uses the fact that both frequencies are slightly interdependent.
+
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/P07_1_plot.png.png "Nonlinear Different Observations")
+
+
+
+### Functionality
+
+Applied methods for windowed Nearest Advocate, linear and nonlinear clock-drift correction and advanced plotting is provided in [experiments/nearest_advocate_windowed](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/nearest_advocate_windowed) with sample Jupyter notebooks of how to use them in the parent directory.
+
 
 
 ## Building from source

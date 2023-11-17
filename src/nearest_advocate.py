@@ -3,7 +3,7 @@
 
 __author__ = "Christoph Schranz"
 __copyright__ = "Copyright 2023, Salzburg Research"
-__version__ = "0.2.0.0"
+__version__ = "0.2.0.1"
 __maintainer__ = "Christoph Schranz, Mathias Schmoigl-Tonis"
 __credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
 
