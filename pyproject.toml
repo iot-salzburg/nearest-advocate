@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nearest_advocate"
-version = "0.2.0.1"
+version = "0.2.0.2"
 authors = [
   { name="Christoph Schranz", email="christoph.schranz@salzburgresearch.at" },
   { name="Mathias Schmoigl-Tonis", email="mathias.schmoigl-tonis@salzburgresearch.at" },

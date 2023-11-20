@@ -88,11 +88,11 @@ print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {m
 Using the NAd in sliding windows, it is possible to estimate the linear or non-linear trend of the relatve clock drift between two clocks. To do so, both event time-series should be very long in terms of their number of elements.
 A Jupyter notebook is provided to adapt this functionality to other applications [experiments/application_nonlinear_correction.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_nonlinear_correction.ipynb).
 
-Example of a linear clock-drift correction:
-![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/linear_correction_1.png "Linear clock-drift correction")
+**Example of a linear clock-drift correction:**
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiments/fig/linear_correction_1.png "Linear clock-drift correction")
 
-Example of a subsequent nonlinear clock-drift correction:
-![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/nonlinear_correction_1.png "Nonlinear clock-drift correction")
+**Example of a subsequent nonlinear clock-drift correction:**
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiments/fig/nonlinear_correction_1.png "Nonlinear clock-drift correction")
 
 
 
@@ -100,7 +100,7 @@ Example of a subsequent nonlinear clock-drift correction:
 
 This algorithm is so robust against data quality issues, that it is even possible to estimate the time-delay between two event-based measurements of different observations. In [experiments/application_different_observations.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_different_observations.ipynb) it is demonstrated how to apply the NAd for breathing and step events from the same participant, that uses the fact that both frequencies are slightly interdependent.
 
-![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/P07_1_plot.png.png "Nonlinear Different Observations")
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiments/fig/P07_1_plot.png "Nonlinear Different Observations")
 
 
 
