@@ -89,10 +89,10 @@ Using the NAd in sliding windows, it is possible to estimate the linear or non-l
 A Jupyter notebook is provided to adapt this functionality to other applications [experiments/application_nonlinear_correction.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_nonlinear_correction.ipynb).
 
 Example of a linear clock-drift correction:
-![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/linear_correction_1.png.png "Linear clock-drift correction")
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/linear_correction_1.png "Linear clock-drift correction")
 
 Example of a subsequent nonlinear clock-drift correction:
-![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/nonlinear_correction_1.png.png "Nonlinear clock-drift correction")
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiment/fig/nonlinear_correction_1.png "Nonlinear clock-drift correction")
 
 
 
