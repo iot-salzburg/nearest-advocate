@@ -88,7 +88,7 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
     # store the lengths of the arrays
     l_arr_ref = len(arr_ref)
     l_arr_sig = len(arr_sig)
-    assert l_arr_ref > 1 and l_arr_sig > 1
+    assert l_arr_ref >= 1 and l_arr_sig >= 1
 
     ref_idx = 0              # index for arr_ref
     sig_idx = 0              # index for arr_sig
@@ -136,7 +136,7 @@ def nearest_advocate_single(arr_ref: np.ndarray, arr_sig: np.ndarray,
 @njit(parallel=False)
 def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
                      td_min: float, td_max: float, td_prox=None, sps: float=10, sparse_factor: int=1,
-                     dist_max: float=0.0, regulate_paddings: bool=True, dist_padding: float=0.0):
+                     dist_max: float=0.0):
     '''Calculates the synchronicity of two arrays of timestamps for a search space between td_min and td_max with a precision of 1/sps. The synchronicity is given by the mean of all minimal distances between each event in arr_sig and it's nearest advocate in arr_ref.
     arr_ref (np.array): Reference array or timestamps assumed to be correct
     arr_sig (np.array): Signal array of  timestamps, assumed to be shifted by an unknown constant time-delta
@@ -145,15 +145,11 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
     sps (int): number of investigated time-shifts per second, should be higher than 10 times the number of median gap of arr_ref (default 10).
     sparse_factor (int): factor for the sparseness of arr_sig for the calculation, higher is faster but may be less accurate (default 1)
     dist_max (None, float): Maximal accepted distances, default None: 1/4 of the median gap of arr_ref
-    dist_padding (None, float): Assumed distances of non-overlapping (padding) matches, default None: 1/4 of the median gap of arr_ref
-    regulate_paddings (bool): regulate non-overlapping events in arr_sig with a maximum distance of err_max
     '''
-    # set the default values for dist_max, dist_padding relative if not set
+    # set the default values for dist_max relative if not set
     # TODO improve default value: min(np.median(np.diff(arr_sig)), np.median(np.diff(arr_ref))) / 4
     if dist_max <= 0.0:
         dist_max = np.median(np.diff(arr_ref))/4
-    if dist_padding <= 0.0:
-        dist_padding = np.median(np.diff(arr_ref))/4
     if td_prox is None:
         td_prox = 1.5 * np.median(np.diff(arr_ref))
 
@@ -176,7 +172,7 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
         time_delays[idx,1] = nearest_advocate_single(
              arr_ref,
              probe-time_delays[idx,0],  # the signal array is shifted by a time-delta
-             dist_max=dist_max, regulate_paddings=regulate_paddings, dist_padding=dist_padding)
+             dist_max=dist_max)
         idx += 1
 
     # finesearch around the peak
@@ -189,7 +185,7 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
         time_delays[idx,1] = nearest_advocate_single(
              arr_ref,
              probe-time_delays[idx,0],  # the signal array is shifted by a time-delta
-             dist_max=dist_max, regulate_paddings=regulate_paddings, dist_padding=dist_padding)
+             dist_max=dist_max)
         idx += 1
     return time_delays
 
