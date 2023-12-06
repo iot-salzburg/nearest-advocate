@@ -19,6 +19,7 @@ This package focuses on the time delay estimation between two event-based time-s
 If you want to guarantee synchronous measurements in advance or estimate the time delay of continuous measurements sampled at a constant rate, you might want to use other methods.
 However, in some use cases, performing an event detection and then estimating the relative time delay has advantages.
 The Nearest Advocate method provides a **precise time delay estimation in event-based time-series** that is **robust against imprecise timestamps, a high fraction of missing events, and clock drift**.
+Time delay estimation also known as the correction of time offsets and time lags as well as time synchronization.
 
 
 ## Quickstart
