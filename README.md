@@ -5,7 +5,7 @@
 [![PyPi version](https://badgen.net/pypi/v/nearest_advocate/)](https://pypi.org/project/nearest_advocate)
 [![PyPI download month](https://img.shields.io/pypi/dm/nearest_advocate.svg)](https://pypi.org/project/nearest-advocate/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7370958.svg)](https://doi.org/10.5281/zenodo.7370958)
+[![DOI](https://zenodo.org/badge/DOI/10.1186/s13634-024-01143-1.svg)](https://doi.org/10.1186/s13634-024-01143-1)
 
 This repository contains the source code, demonstration data, unit tests, benchmarks as well as research experiments for the Nearest Advocate Algorithm.
 
@@ -171,6 +171,10 @@ Read the the [build-README.md](#scipydev/REAMDE.md)
 
 When using in academic works please cite:
 
-```
-Christoph Schranz and Sebastian Mayr. 2022. Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis- basierten Zeitreihendaten als Alternative zur Kreuzkorrelation. (9 2022). https://doi.org/10.5281/ZENODO.7370958
-```
+
+>Schranz, C., Mayr, S., Bernhart, S. et al. Nearest advocate: a novel event-based time delay estimation algorithm for multi-sensor time-series data synchronization. EURASIP J. Adv. Signal Process. 2024, 46 (2024). https://doi.org/10.1186/s13634-024-01143-1
+
+or:
+
+>Schranz, C., & Mayr, S. (2022, September 29). Ein neuer Algorithmus zur Zeitsynchronisierung von Ereignis- basierten Zeitreihendaten als Alternative zur Kreuzkorrelation. Proceedings of the 14th Symposium of the Section Sport Informatics and Engineering of the German Society of Sport Science (dvs) (spinfortec2022), Chemnitz. https://doi.org/10.5281/zenodo.7370958
+
