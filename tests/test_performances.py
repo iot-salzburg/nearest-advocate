@@ -12,7 +12,7 @@ TIME_SHIFT = np.pi        # true time-shift between the two arrays
 DEF_DIST = 0.25           # default values for dist_max of nearest_advocate
 TD_MAX = 150              # search space of 5 minutes
 TD_MIN = -150
-SAMPLES_PER_S = 10        # precision of the search space
+SAMPLES_PER_S = 100        # precision of the search space
 LENGTHS = [10, 100, 1_000, 10_000, 100_000]  # lengths to evaluate
 
 print(" Test and compare shifts ".center(60, "#"))
@@ -76,7 +76,7 @@ for length in LENGTHS:
     np_nearest = nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig,
                                   td_min=TD_MIN, td_max=TD_MAX, sps=SAMPLES_PER_S,
                                   sparse_factor=1, dist_max=DEF_DIST)
-    print(f"{time.time()-start_time:.6f}".center(10), end="")
+    print(f"{time.time()-start_time:.6f} s".center(10), end=" ")
 
 
 # # Time the Cython-solution

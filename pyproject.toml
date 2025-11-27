@@ -11,12 +11,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nearest_advocate"
-version = "0.2.0.2"
+version = "0.2.0.4"
 authors = [
   { name="Christoph Schranz", email="christoph.schranz@salzburgresearch.at" },
   { name="Mathias Schmoigl-Tonis", email="mathias.schmoigl-tonis@salzburgresearch.at" },
 ]
-description = "A time delay estimation method for event-based time-series."
+description = "A time delay estimation method for discrete event-based time-series data."
 readme = "README.md"
 requires-python = ">=3.6"
 classifiers = [

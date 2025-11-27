@@ -52,7 +52,7 @@ time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
 print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
 #> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
 ```
-The time delay estimation is 3.15 seconds which is pretty close to the true one.
+The time delay estimation is 3.15 seconds, which is pretty close to the true one.
 Create a plot of the resulting characteristic curve of Nearest Advocate, the global minimum of the curve is used as time delay estimation.
 
 ```python
@@ -70,6 +70,31 @@ plt.show()
 ![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/time_delay_estimation.png "Time Delay Estimation")
 
 
+### Parameters
+
+```python
+"""
+Parameters
+----------
+arr_ref : array_like
+    Sorted reference array (1-D) with timestamps assumed to be correct.
+arr_sig : array_like
+    Sorted signal array (1-D) of timestamps, assumed to be shifted by an unknown constant time-delta.
+dist_max : float
+    Maximal accepted distances between two advocate events. Should be around 1/4 of the average gap of each array.
+td_min : float
+    Lower bound of the search space for the time-shift.
+td_max : float
+    Upper bound of the search space for the time-shift.
+sps : int, optional
+    Number of investigated time-shifts per second. Default None: sets it at 10 divided by the median gap of each array.
+sparse_factor : int, optional
+    Factor for the sparseness of `arr_sig` for the calculation, higher is faster at the cost of precision (default 1).
+symmetric : bool
+    Perform the Nearest Advocate algorithm symmetrically, i.e., both orders of the arrays and the results are averaged (default False).
+"""
+```
+
 ## Functionality
 
 ### Symmetric Nearest Advocate
@@ -77,7 +102,10 @@ plt.show()
 To apply the Nearest Advocate algorithm symmetrically, just pass the flag `symmetric=True` in the method:
 
 ```python
-time_shifts = nearest_advocate.nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, td_min=-60, td_max=60, sps=20, symmetric=True)
+time_shifts = nearest_advocate.nearest_advocate(
+    arr_ref=arr_ref, arr_sig=arr_sig, 
+    td_min=-60, td_max=60, sps=20, symmetric=True
+)
 time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
 print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
 #> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
@@ -134,25 +162,21 @@ python setup.py build_ext --inplace
 
 ### Run the tests
 
-Currently, the Cython-version is under development and will be available soon.
-
 Run the test scripts:
 
 ```bash
 python tests/test_algorithm.py
 #> Testing numba-version:          ok
-#> Testing Cython-version:         ok
 #> Testing Python-version:         ok
 
 python tests/test_performances.py
 #> ################# Test and compare shifts ##################
-#> Numba:          0.01329827 s,    detected time shift: 3.15 s,    minimal mean distance: 0.084238 s
-#> Cython:         0.01338649 s,    detected time shift: 3.15 s,    minimal mean distance: 0.084238 s
-#> Python:         3.06915808 s,    detected time shift: 3.15 s,    minimal mean distance: 0.084238 s
+#> Numba:          0.08398032 s,    detected time shift: 3.14 s,    minimal mean distance: 0.076846 s
+#> Python:         21.74939585 s,   detected time shift: 3.14 s,    minimal mean distance: 0.076846 s
 #>
 #> ########## Compare versions for multiple lengths ###########
 #> Method      10       100       1000     10000     100000
-#> Numba:   0.000157  0.000786  0.013276  0.138520  1.402027
+#> Numba:  0.000952 s 0.006065 s 0.087034 s 1.172281 s 15.040692 s
 ```
 
 

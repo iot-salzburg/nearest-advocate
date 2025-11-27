@@ -8,10 +8,10 @@ from scipy.signal import correlate, correlation_lags
 
 # parameters for PCC
 PCC_MODE = "same"
-PCC_SAMPLES_PER_S = 10        # interpolated inter-event intervals
+PCC_SAMPLES_PER_S = 1000        # interpolated inter-event intervals
 
 # parameters for KCC
-KERNEL_PRECISION = 0.05
+KERNEL_PRECISION = 0.001
 
 # parameters for DTW (tradeoff-between accuracy and runtime)
 DTW_STEPWIDTH = 0.5
@@ -190,6 +190,52 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray,
     return time_delays
 
 
+def pearson_cc_direct(
+    arr_ref_cont: np.ndarray, arr_sig_cont: np.ndarray,
+    mode: str="same", method: str="auto", significant_area=10
+        ):
+    """Pearson Cross-correlation between two time-series.
+    
+    The results are normalized between -1 and 1
+    arr_ref_cont (np.array): Reference time-series assumed to be correct
+    arr_sig_cont (np.array): Signal time-series, assumed to be shifted by an unknown constant time-delta
+    mode (str): mode of the scipy's cross-correlation method: 'same', 'full'
+    method (str): mode of the scipy's cross-correlation method: 'auto', 'fft', 'direct'
+    significant_area (float): parameter for the extraction of the significant peak in the CC-curve,
+        Specifies the width around the largest differences for the peak detection.
+    """
+    stepwidth = 1/PCC_SAMPLES_PER_S
+
+    # calculate the correlation
+    corrs = correlate(arr_sig_cont, arr_ref_cont, mode=mode, method=method) / np.sqrt(
+        (correlate(arr_ref_cont, arr_ref_cont, mode=mode, method=method)[int(len(arr_ref_cont)/2)]
+         * correlate(arr_sig_cont, arr_sig_cont, mode=mode, method=method)[int(len(arr_sig_cont)/2)]))
+    time_lags = stepwidth * correlation_lags(
+        arr_ref_cont.size, arr_sig_cont.size, mode=mode)
+
+    # normalize the correlations
+    overlap = (stepwidth + time_lags.max() - np.abs(time_lags))/time_lags.max()
+    corrs = corrs / (overlap + 1e0)
+    time_delays = np.array([time_lags, corrs]).T
+
+    if mode != "same":
+        raise Exception("Not implemented yet")
+    if mode == "full":
+        # overlap above 50%
+        time_delays = time_delays[overlap > 0.5]
+
+    # find the peak by searching for the largest differences in the signal
+    significant_peak = np.argmax(np.diff(time_delays[:,1]))
+    time_delays_proximity = time_delays[(significant_peak-significant_area*PCC_SAMPLES_PER_S//2
+                                     ):significant_peak+significant_area*PCC_SAMPLES_PER_S//2]
+    if len(time_delays_proximity) > 0:
+        peak_idx = np.argmax(time_delays_proximity[:,1])
+        time_shift, metric = time_delays_proximity[peak_idx]
+    else:
+        time_shift, metric = time_delays[np.argmax(time_delays[:,1])]
+    return time_shift, metric, time_delays
+
+    
 def pearson_cc(arr_ref: np.ndarray, arr_sig: np.ndarray,
                mode: str=PCC_MODE, method: str="auto",
               smooth_outliers=False, significant_area=10):
