@@ -17,6 +17,32 @@ KERNEL_PRECISION = 0.001
 DTW_STEPWIDTH = 0.5
 
 
+def moving_average(arr: np.ndarray, width: int) -> np.ndarray:
+    """
+    Smooth an array using a moving average with edge padding.
+ 
+    Parameters
+    ----------
+    arr : np.ndarray
+        Input array to be smoothed.
+    w : int
+        Kernel window length (incremented if even).
+ 
+    Returns
+    -------
+    ndarray
+        Smoothed array with the same length as input.
+    """
+    assert isinstance(width, int) and width > 2
+    if width % 2 == 0:
+        width = width + 1  # assert width is odd
+    return np.convolve(
+        np.concatenate([arr[:int(width//2)], arr, arr[-int(width//2):]]),
+        np.ones(width),
+        'valid'
+    ) / width
+
+    
 def modify_timeseries(arr: np.ndarray, offset: float=0, subselect_length=None, sigma: float=0.0, fraction: float=1.0, time_warp_scale=0.0):
     """Modify a event-based timeseries in order generate semi-simulated data.
 

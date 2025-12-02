@@ -1,25 +1,26 @@
 # Nearest-Advocate
 
-**A time delay estimation method for event-based time-series.**
+**A Time-Delay Estimation algorithm for Event Time-Series.**
 
 [![PyPi version](https://badgen.net/pypi/v/nearest_advocate/)](https://pypi.org/project/nearest_advocate)
 [![PyPI download month](https://img.shields.io/pypi/dm/nearest_advocate.svg)](https://pypi.org/project/nearest-advocate/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![DOI](https://zenodo.org/badge/DOI/10.1186/s13634-024-01143-1.svg)](https://doi.org/10.1186/s13634-024-01143-1)
 
-This repository contains the source code, demonstration data, unit tests, benchmarks as well as research experiments for the Nearest Advocate Algorithm.
+This repository contains the source code, documentation, unit tests, benchmarks as well as various examples of how to use the Nearest Advocate algorithm.
 
-- Github-Repository: [https://github.com/iot-salzburg/nearest-advocate](https://github.com/iot-salzburg/nearest-advocate)
+- GitHub-Repository: [https://github.com/iot-salzburg/nearest-advocate](https://github.com/iot-salzburg/nearest-advocate)
 - Pip-Package: [https://pypi.org/project/nearest-advocate/](https://pypi.org/project/nearest-advocate/).
 
 
-## Scope of the package
-
 This package focuses on the time delay estimation between two event-based time-series that are relatively shifted by an unknown time offset. An event-based time-series is given by a set of timestamps of certain events.
-If you want to guarantee synchronous measurements in advance or estimate the time delay of continuous measurements sampled at a constant rate, you might want to use other methods.
-However, in some use cases, performing an event detection and then estimating the relative time delay has advantages.
-The Nearest Advocate method provides a **precise time delay estimation in event-based time-series** that is **robust against imprecise timestamps, a high fraction of missing events, and clock drift**.
-Time delay estimation also known as the correction of time offsets and time lags as well as time synchronization.
+
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiments/fig/synch_dist.png "Nearest Advocate")
+
+Example of a time-delay estimation.
+
+The Nearest Advocate method provides a **precise time delay estimation in arrays of timestamps** that is **robust against noisy timestamps, a high fraction of missing events, and clock drift** (Schranz et al., 2024).
+Time delay estimation is also called correction of time offsets and time lags as well as time synchronization.
 
 
 ## Quickstart
@@ -37,28 +38,29 @@ import numpy as np
 import nearest_advocate
 ```
 
-Create a reference array whose inter-event intervals are sampled from a normal distribution. The signal array is a clone of the reference´, shifted by `np.pi` and added Gaussian noise. The event's timestamps of both arrays must be sorted.
+Create a reference array whose inter-event intervals are sampled from a normal distribution. The signal array is a clone of the reference, shifted by `np.pi` and added Gaussian noise. The event's timestamps of both arrays must be sorted.
 
 ```python
 arr_ref = np.sort(np.cumsum(np.random.normal(loc=1, scale=0.25, size=1000)))
 arr_sig = np.sort(arr_ref + np.pi + np.random.normal(loc=0, scale=0.1, size=1000))
 ```
 
-The function `nearest_advocate.nearest_advocate` returns a two-columned array with all investigated time-shifts and their mean distances, i.e., the measure of the synchronicity between both arrays (lower is better).
+The function `nearest_advocate.nearest_advocate` returns a two-columned array with all investigated time-shifts (i.e., time-delays) and their respective `mean distance (over all nearest advocates)`, i.e., this algorithm's measure of the synchronicity between both array. A lower mean distance is better.
 
 ```python
-time_shifts = nearest_advocate.nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, td_min=-60, td_max=60, sps=20)
+time_shifts = nearest_advocate.nearest_advocate(arr_ref=arr_ref, arr_sig=arr_sig, dist_max=0.25, td_min=-60, td_max=60)
 time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
-print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
-#> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
+print(f"Estimated a time delay of {time_shift:.4f} s with a minimal mean distance of {min_mean_dist:.6f} s")
+#> Estimated a time delay of 3.1469 s with a minimal mean distance of 0.077313 s
 ```
-The time delay estimation is 3.15 seconds, which is pretty close to the true one.
+
+The time delay is estimated to be approximately $pi$ seconds. Note that the resolution is limited but adjustable using the parameter `sps`.
 Create a plot of the resulting characteristic curve of Nearest Advocate, the global minimum of the curve is used as time delay estimation.
 
 ```python
 import matplotlib.pyplot as plt
 plt.plot(time_shifts[:,0], time_shifts[:,1], color="steelblue", label="Mean distance")
-plt.vlines(x=time_shift, ymin=min_mean_dist, ymax=np.mean(time_shifts[:,1]), color="firebrick", label=f"Shift = {time_shift:.2f}s")
+plt.vlines(x=time_shift, ymin=min_mean_dist, ymax=np.mean(time_shifts[:,1]), color="firebrick", label=f"Time-Delay = {time_shift:.2f} s")
 plt.xlim(time_shift-4, time_shift+4)
 plt.xlabel("Time delay (s)")
 plt.ylabel("Mean distance (s)")
@@ -72,49 +74,40 @@ plt.show()
 
 ### Parameters
 
-```python
-"""
-Parameters
-----------
-arr_ref : array_like
-    Sorted reference array (1-D) with timestamps assumed to be correct.
-arr_sig : array_like
-    Sorted signal array (1-D) of timestamps, assumed to be shifted by an unknown constant time-delta.
-dist_max : float
-    Maximal accepted distances between two advocate events. Should be around 1/4 of the average gap of each array.
-td_min : float
-    Lower bound of the search space for the time-shift.
-td_max : float
-    Upper bound of the search space for the time-shift.
-sps : int, optional
-    Number of investigated time-shifts per second. Default None: sets it at 10 divided by the median gap of each array.
-sparse_factor : int, optional
-    Factor for the sparseness of `arr_sig` for the calculation, higher is faster at the cost of precision (default 1).
-symmetric : bool
-    Perform the Nearest Advocate algorithm symmetrically, i.e., both orders of the arrays and the results are averaged (default False).
-"""
-```
+Here is the reformatted Markdown table:
 
-## Functionality
+| Parameter       | Type        | Description |
+|-----------------|-------------|-------------|
+| `arr_ref`       | array_like  | Sorted reference array (1-D) with timestamps assumed to be correct. |
+| `arr_sig`       | array_like  | Sorted signal array (1-D) of timestamps, assumed to be shifted by an unknown constant time-delta. |
+| `td_min`        | float       | Lower bound of the search space for the time-shift. |
+| `td_max`        | float       | Upper bound of the search space for the time-shift. |
+| `sps`           | int, optional | Resolution or number of investigated time-shifts per second. Default `None`: sets it to 100 divided by the median gap of each array. |
+| `dist_max`      | float, optional       | Maximal accepted distance between two advocate events; Default `None` set it to 1/4 of the smaller average gap between the array timestamps. |
+| `sparse_factor` | int, optional | Factor for sparseness of `arr_sig` during calculation; higher is faster but less precise (default 1). |
+| `symmetric`     | bool, optional | Perform the Nearest Advocate algorithm symmetrically, i.e., twice with switched ref and probe signal, then averaging results from both array orders (default `False`). |
 
-### Symmetric Nearest Advocate
+Examples on how to set the parameters for certain use-cases can be found in the following examples.
 
-To apply the Nearest Advocate algorithm symmetrically, just pass the flag `symmetric=True` in the method:
 
-```python
-time_shifts = nearest_advocate.nearest_advocate(
-    arr_ref=arr_ref, arr_sig=arr_sig, 
-    td_min=-60, td_max=60, sps=20, symmetric=True
-)
-time_shift, min_mean_dist = time_shifts[np.argmin(time_shifts[:,1])]
-print(f"Found an optimum at {time_shift:.4f}s with a minimal mean distance of {min_mean_dist:.6f}s")
-#> Found an optimum at 3.15s with a minimal mean distance of 0.079508s
-```
+## Use-Case Examples of the Nearest Advocate Algorithm
+
+### Post-hoc Synchronization of a Wearable Measurement against a Reference in Human Running
+
+In human biomechanics, wearable measurements are regularly validated against a reference measurement (or gold standard). Thus, both measurements are acquired simultaneously and mostly with different controllers and different internal clocks. The **subsequent evaluation of the wearable data requires a post-recording synchronization**.
+
+In the example, we have two measurements of a human running on a treadmill. The reference system is the treadmill, which measures the vertical forces of the feet on its belt (called *reference signal*). The probing signal is from wearable insoles that measure the pressure on the soles (called *probing signal*).
+
+In biomechanics practice, often physical artifacts are performed at the start of recordings, such as jumps, which helps for the manual synchronization of the signal. In this example we will show, that no manual synchronization is required by using the **[Nearest Advocate Algorithm for Event-based Time-Delay Estimation](https://github.com/iot-salzburg/nearest-advocate)**.
+
+![](https://raw.githubusercontent.com/iot-salzburg/nearest-advocate/main/experiments/fig/step_sync.png "Step synchronization")
+
+A Jupyter notebook is provided to adapt this functionality to other applications [experiments/application_gait_measurements.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_gait_measurements.ipynb).
 
 
 ### Clock-drift correction
 
-Using the NAd in sliding windows, it is possible to estimate the linear or non-linear trend of the relatve clock drift between two clocks. To do so, both event time-series should be very long in terms of their number of elements.
+Using the NAd in sliding windows, it is possible to estimate the linear or non-linear trend of the relative clock drift between two clocks. To do so, both event time-series should be very long in terms of their number of elements.
 A Jupyter notebook is provided to adapt this functionality to other applications [experiments/application_nonlinear_correction.ipynb](https://github.com/iot-salzburg/nearest-advocate/blob/main/experiments/application_nonlinear_correction.ipynb).
 
 **Example of a linear clock-drift correction:**
@@ -139,56 +132,9 @@ Applied methods for windowed Nearest Advocate, linear and nonlinear clock-drift 
 
 
 
-## Building from source
+## Challenge
 
-### Setup
-
-```bash
-cd /go/to/path
-git clone https://github.com/iot-salzburg/nearest-advocate
-cd nearest-advocate
-pip install -r requirements.txt
-```
-
-For reproducibility, the experiments were run in Python 3.9 inside a container environment using the Docker orchestration software with the image `cschranz/gpu-jupyter` and tag `v1.4\_cuda-11.0\_ubuntu-20.04`, available on Dockerhub.
-
-Build the Cython-version of the algorithm with:
-
-```bash
-cd src
-python setup.py build_ext --inplace
-```
-
-
-### Run the tests
-
-Run the test scripts:
-
-```bash
-python tests/test_algorithm.py
-#> Testing numba-version:          ok
-#> Testing Python-version:         ok
-
-python tests/test_performances.py
-#> ################# Test and compare shifts ##################
-#> Numba:          0.08398032 s,    detected time shift: 3.14 s,    minimal mean distance: 0.076846 s
-#> Python:         21.74939585 s,   detected time shift: 3.14 s,    minimal mean distance: 0.076846 s
-#>
-#> ########## Compare versions for multiple lengths ###########
-#> Method      10       100       1000     10000     100000
-#> Numba:  0.000952 s 0.006065 s 0.087034 s 1.172281 s 15.040692 s
-```
-
-
-## Reproduce the research experiments
-
-In the directory [nearest_advocate/experiments](https://github.com/iot-salzburg/nearest-advocate/tree/main/experiments), multiple Jupyter Notebooks contain experiments based on data in the `data` directory.
-
-
-<!-- ## Development of Scipy
-
-Read the the [build-README.md](#scipydev/REAMDE.md)
- -->
+> **Poorly synchronized measurements shouldn't be a challenge anymore**. In case you doubt whether your data can be used at all, contact me! I would be glad to rescue your data, e.g., for a funding for companies or a co-authorship for universities!
 
 
 ## Citation

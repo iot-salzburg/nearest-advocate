@@ -71,7 +71,7 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
     dist_max : float
         Important hyperparameter which caps the maximal distance between any signal timestamp and its nearest reference timestamp. Too low values decrease robustness for noisy timestamps, too high values over-smooth the estimation's minima. Default None: 1/4 of the smaller median inter-event interval of the arrays (1/4 * min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig)))).
     sps : float, optional
-        Number of investigated time-shifts per second. Higher values increases the estimation's precision by the cost of performance. Default None: sets it at 100 divided by the median gap of each array.
+        Resolution or number of investigated time-shifts per second. Higher values increases the estimation's precision by the cost of performance. Default None: sets it at 100 divided by the median gap of each array.
     sparse_factor : int, optional
         Factor to process a sparse `arr_sig` by taking every k-th (k>0) value into account; higher is faster at the (not recommendable) cost of precision (default 1).
     symmetric : bool
