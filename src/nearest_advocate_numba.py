@@ -15,7 +15,7 @@ except ModuleNotFoundError:
 
 @numba.njit(parallel=False)
 def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.float32]',
-                            dist_max: float, symmetric: bool = False) -> float:
+                            dist_max: float) -> float:
     '''Calculates the synchronicity between two arrays of timestamps in terms of the mean of all minimal distances between each event in arr_sig and it's nearest advocate event in arr_ref.
 
     Parameters
@@ -26,20 +26,12 @@ def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndar
         Array (1-D) of sorted timestamps that are assumed to be shifted (i.e. delayed) by an unknown but constant time-delta.
     dist_max : float
         Important hyperparameter which caps the maximal distance between any signal timestamp and its nearest reference timestamp. Too low values decrease robustness for noisy timestamps, too high values over-smooth the estimation's minima. Default None: 1/4 of the smaller median inter-event interval of the arrays (1/4 * min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig)))).
-    symmetric : bool
-        Perform the Nearest Advocate algorithm symmetrically, i.e., both orders of the arrays and the results are averaged. This is better but assumes no missing events in `arr_sig` (default False).
-        
+
     Returns
     -------
     mean_distance : float
         The mean distance of each event in `arr_sig` to its nearest advocate event in `arr_ref`.
     '''
-    # If symmetric Nearest Advocate, call the algorithm recursively
-    if symmetric:
-        left = nearest_advocate_single(arr_ref, arr_sig, dist_max=dist_max, symmetric=False)
-        right = nearest_advocate_single(arr_sig, arr_ref, dist_max=dist_max, symmetric=False)
-        return left + right
-
     # Assert input properties
     assert dist_max > 0.0          # maximal distance must be greater than 0.0
 
@@ -93,8 +85,7 @@ def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndar
 
 @numba.njit(parallel=False)
 def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td_max: float,
-                     dist_max: Optional[float] = None, sps: Optional[float] = None, sparse_factor: int = 1,
-                     symmetric: bool = False
+                     dist_max: float, sps: float, sparse_factor: int = 1
                      ) -> 'np.ndarray[(any, 2), np.float32]':
     '''Calculates the synchronicity between two arrays of timestamps for a search space that ranges from td_min to td_max with a stepwidth of 1/sps. The synchronicity measures is given by the mean of all minimal distances between each event in arr_sig and it's nearest advocate event in arr_ref.
 
@@ -110,12 +101,10 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td
         Upper bound of the one-dimensional search space of time-deltas.
     dist_max : float
         Important hyperparameter which caps the maximal distance between any signal timestamp and its nearest reference timestamp. Too low values decrease robustness for noisy timestamps, too high values over-smooth the estimation's minima. Default None: 1/4 of the smaller median inter-event interval of the arrays (1/4 * min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig)))).
-    sps : float, optional
+    sps : float
         Number of investigated time-shifts per second. Higher values increases the estimation's precision by the cost of performance. Default None: sets it at 100 divided by the median gap of each array.
     sparse_factor : int, optional
         Factor to process a sparse `arr_sig` by taking every k-th (k>0) value into account; higher is faster at the (not recommendable) cost of precision (default 1).
-    symmetric : bool
-        Perform the Nearest Advocate algorithm symmetrically, i.e., both orders of the arrays and the results are averaged. This is better but assumes no missing events in `arr_sig` (default False).
 
     Returns
     -------
@@ -157,38 +146,11 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td
     >>> plt.legend(loc="lower right")
     >>> plt.show()
     '''
-    # If symmetric Nearest Advocate, call the algorithm recursively
-    if symmetric:
-        left_shifts = nearest_advocate(
-            arr_ref=arr_ref, arr_sig=arr_sig, 
-            dist_max=dist_max, td_min=td_min, td_max=td_max,
-            sps=sps, sparse_factor=sparse_factor, symmetric=False
-            )
-        right_shifts = nearest_advocate(
-            arr_ref=-arr_sig[::-1], arr_sig=-arr_ref[::-1], 
-            dist_max=dist_max, td_min=td_min, td_max=td_max,
-            sps=sps, sparse_factor=sparse_factor, symmetric=False
-        )
-        time_shifts = np.empty(left_shifts.shape, dtype=np.float32)
-        time_shifts[:,0] = left_shifts[:,0]
-        time_shifts[:,1] = (left_shifts[:,1] + right_shifts[:,1]) / 2
-        return time_shifts
 
     # Assert properties of the arrays
     assert len(arr_ref) >= 2 and len(arr_sig) >= 2
     assert is_strictly_increasing(arr_ref), "The reference array must be strictly increasing (without duplicates)."
     assert is_strictly_increasing(arr_sig), "The signal array must be strictly increasing (without duplicates)."
-
-    # set default values if unset
-    if sps is None or sps <= 0.0:
-        sps_float = 100 / min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig)))
-    else:
-        sps_float = sps
-    if dist_max is None:
-        dist_max_float = min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig))) / 4
-    else:
-        assert dist_max > 0.0
-        dist_max_float = dist_max
 
     # Create a copy of arr_sig and make sparse if set
     if int(sparse_factor) > 1:
@@ -197,8 +159,8 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td
         probe = arr_sig.copy()
 
     # Create an T x 2 matrix to store the evaluated time-shifts with their respective mean distance
-    np_nearest = np.empty((int((td_max-td_min)*sps_float), 2), dtype=np.float32)
-    np_nearest[:, 0] = np.arange(td_min, td_max-1/sps_float+1e-12, 1/sps_float)
+    np_nearest = np.empty((int((td_max-td_min) * sps), 2), dtype=np.float32)
+    np_nearest[:, 0] = np.arange(td_min, td_max-1/sps+1e-12, 1 / sps)
 
     # Calculate the mean distance for all time-shifts in the search space.
     idx = 0
@@ -207,7 +169,7 @@ def nearest_advocate(arr_ref: np.ndarray, arr_sig: np.ndarray, td_min: float, td
         np_nearest[idx, 1] = nearest_advocate_single(
              arr_ref,
              probe-np_nearest[idx, 0],  # the signal array is shifted by a time-delta
-             dist_max=dist_max_float)
+             dist_max=dist_max)
         idx += 1
     # The shift with the lowest mean distance is the best fit for the time-shift
     return np_nearest

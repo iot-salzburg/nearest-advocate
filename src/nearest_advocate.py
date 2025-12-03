@@ -2,8 +2,8 @@
 """A time delay estimation method for event-based time-series."""
 
 __author__ = "Christoph Schranz"
-__copyright__ = "Copyright 2023, Salzburg Research"
-__version__ = "0.2.0.4"
+__copyright__ = "Copyright 2025, Salzburg Research"
+__version__ = "0.2.0.5"
 __maintainer__ = "Christoph Schranz, Mathias Schmoigl-Tonis"
 __credits__ = ["Christoph Schranz", "Mathias Schmoigl-Tonis"]
 
@@ -45,11 +45,14 @@ def nearest_advocate_single(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndar
     min_event_time = min(arr_ref_[0], arr_sig_[0])
     arr_ref_ = np.array(arr_ref_ - min_event_time, dtype=np.float32)
     arr_sig_ = np.array(arr_sig_ - min_event_time, dtype=np.float32)
+
+    # If symmetric Nearest Advocate, call the algorithm recursively
+    if symmetric:
+        left = _nearest_advocate_single(arr_ref_, arr_sig_, dist_max=dist_max)
+        right = _nearest_advocate_single(arr_sig_, arr_ref_, dist_max=dist_max)
+        return left + right
     
-    return _nearest_advocate_single(
-        arr_ref=arr_ref_, arr_sig=arr_sig_, 
-        dist_max=dist_max, symmetric=symmetric
-    )
+    return _nearest_advocate_single(arr_ref=arr_ref_, arr_sig=arr_sig_, dist_max=dist_max)
 
 
 def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.float32]',
@@ -135,11 +138,40 @@ def nearest_advocate(arr_ref: 'np.ndarray[np.float32]', arr_sig: 'np.ndarray[np.
     assert isinstance(td_min, (int, float))
     assert isinstance(td_max, (int, float))
     assert isinstance(sparse_factor, int) and sparse_factor > 0
+
+    # set default values if unset
+    if sps is None or sps <= 0.0:
+        sps_float = 100.0 / min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig)))
+    else:
+        sps_float = float(sps)
+     
+    if dist_max is None:
+        dist_max_float = min(np.median(np.diff(arr_ref)), np.median(np.diff(arr_sig))) / 4.0
+    else:
+        assert dist_max > 0.0
+        dist_max_float = float(dist_max)
+    
+    # If symmetric Nearest Advocate, call the algorithm recursively
+    if symmetric:
+        left_shifts = _nearest_advocate(
+            arr_ref=arr_ref_, arr_sig=arr_sig_, 
+            td_min=float(td_min), td_max=float(td_max), dist_max=dist_max_float,
+            sps=sps_float, sparse_factor=sparse_factor
+            )
+        right_shifts = _nearest_advocate(
+            arr_ref=-arr_sig_[::-1], arr_sig=-arr_ref_[::-1], 
+            td_min=float(td_min), td_max=float(td_max), dist_max=dist_max_float, 
+            sps=sps_float, sparse_factor=sparse_factor
+        )
+        time_shifts = np.empty(left_shifts.shape, dtype=np.float32)
+        time_shifts[:,0] = left_shifts[:,0]
+        time_shifts[:,1] = (left_shifts[:,1] + right_shifts[:,1]) / 2
+        return time_shifts
     
     return _nearest_advocate(
         arr_ref=arr_ref_, arr_sig=arr_sig_, 
-        dist_max=dist_max, td_min=td_min, td_max=td_max, 
-        sps=sps, sparse_factor=sparse_factor, symmetric=symmetric
+        td_min=float(td_min), td_max=float(td_max), dist_max=dist_max_float,
+        sps=sps_float, sparse_factor=sparse_factor
     )
 
 
